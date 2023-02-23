@@ -42,6 +42,10 @@ def convert_table(table, *, namespaces={}, index_hint="first", dtypes={}):
     indexes = determine_indexes(renamed, hint=index_hint)
     transformed = preprocess_variables(renamed, indexes)
 
-    return xr.Dataset(transformed).assign(
-        {name: lambda ds: ds[name].astype(dtype) for name, dtype in dtypes.items()}
+    return (
+        xr.Dataset(transformed)
+        .assign(
+            {name: lambda ds: ds[name].astype(dtype) for name, dtype in dtypes.items()}
+        )
+        .pipe(lambda obj: obj if list(obj) != ["$"] else obj["$"].rename(None))
     )
