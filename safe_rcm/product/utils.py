@@ -26,6 +26,5 @@ def strip_namespaces(name, namespaces):
     trimmed : str
         The string without prefix and without leading colon.
     """
-    funcs = [lambda n: n.removeprefix(ns) for ns in namespaces]
-
+    funcs = [toolz.functoolz.flip(str.removeprefix, ns) for ns in namespaces]
     return toolz.functoolz.pipe(name, *funcs).lstrip(":")
