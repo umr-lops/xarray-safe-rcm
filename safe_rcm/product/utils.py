@@ -1,11 +1,11 @@
 import toolz
 
 
-def split_attributes(mapping):
+def split_marked(mapping, marker="@"):
     groups = toolz.itertoolz.groupby(
-        lambda item: item[0].startswith("@"), mapping.items()
+        lambda item: item[0].startswith(marker), mapping.items()
     )
-    attrs = {key.lstrip("@"): value for key, value in groups[True]}
+    attrs = {key.lstrip(marker): value for key, value in groups[True]}
     data = {key: value for key, value in groups[False]}
 
     return attrs, data
