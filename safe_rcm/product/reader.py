@@ -3,11 +3,12 @@ from lxml import etree
 
 from ..schema import open_schema
 from . import converters, utils
+from .dicttoolz import query
 
 
 def execute(f, path, kwargs={}):
     def inner(mapping):
-        subset = utils.query(mapping, path)
+        subset = query(path, mapping)
 
         return f(subset, **kwargs)
 

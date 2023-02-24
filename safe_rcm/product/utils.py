@@ -21,23 +21,6 @@ def absolute_url_path(url):
     return urlunsplit(split._replace(path=absolute_path))
 
 
-def query(mapping, path):
-    if path == "/":
-        return mapping
-
-    keys = path.lstrip("/").split("/")
-    return toolz.dicttoolz.get_in(keys, mapping, no_default=True)
-
-
-def valsplit(predicate, d):
-    wrapper = lambda item: predicate(item[1])
-    groups = toolz.itertoolz.groupby(wrapper, d.items())
-    first = dict(groups.get(True, ()))
-    second = dict(groups.get(False, ()))
-
-    return first, second
-
-
 def split_marked(mapping, marker="@"):
     groups = toolz.itertoolz.groupby(
         lambda item: item[0].startswith(marker), mapping.items()
