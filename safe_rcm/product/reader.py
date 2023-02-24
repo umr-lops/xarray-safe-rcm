@@ -43,14 +43,14 @@ def read_product(fs, product_url):
     namespaces = toolz.dicttoolz.keymap(
         lambda x: x if x is not None else "rcm", tree.nsmap
     )
-    schema_location = tree.xpath("/@xsi:schemaLocation", namespaces=namespaces)[0]
+    schema_location = tree.xpath("./@xsi:schemaLocation", namespaces=namespaces)[0]
     _, schema_path = schema_location.split(" ")
 
     if not schema_path.startswith(".."):
         raise ValueError("schema path is absolute, the code can't handle that")
 
     root, _ = product_url.rsplit("/", maxsplit=1)
-    schema_url = f"{root}/{schema_path}"
+    schema_url = utils.absolute_url_path(f"{root}/{schema_path}")
     schema_root, schema_name = schema_url.rsplit("/", maxsplit=1)
 
     schema = open_schema(fs, schema_root, schema_name)
