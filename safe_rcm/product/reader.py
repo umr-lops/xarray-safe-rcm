@@ -9,7 +9,7 @@ def extract_metadata(
     mapping,
     namespaces,
     collapse=(),
-    ignore=("@xmlns:rcm", "@xmlns:xsi", "@xsi:schemaLocation"),
+    ignore=("@xmlns", "@xmlns:rcm", "@xmlns:xsi", "@xsi:schemaLocation"),
 ):
     def metadata_filter(item):
         k, v = item
