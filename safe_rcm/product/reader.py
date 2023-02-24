@@ -1,4 +1,6 @@
+import datatree
 import toolz
+import xarray as xr
 from lxml import etree
 
 from ..schema import open_schema
@@ -28,7 +30,8 @@ def extract_metadata(
     to_collapse = toolz.dicttoolz.keyfilter(lambda x: x in collapse, mapping)
     collapsed = dict(toolz.itertoolz.concat(v.items() for v in to_collapse.values()))
 
-    return metadata | collapsed
+    attrs = metadata | collapsed
+    return datatree.DataTree(xr.Dataset(attrs=attrs))
 
 
 def execute(f, path, kwargs={}):
