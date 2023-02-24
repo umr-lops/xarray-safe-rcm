@@ -7,7 +7,6 @@ from . import utils
 
 def extract_metadata(
     mapping,
-    namespaces,
     collapse=(),
     ignore=("@xmlns", "@xmlns:rcm", "@xmlns:xsi", "@xsi:schemaLocation"),
 ):
@@ -21,23 +20,22 @@ def extract_metadata(
         return (k.startswith("@") or utils.is_scalar(v)) and k not in ignore
 
     # extract the metadata
-    metadata = toolz.dicttoolz.itemfilter(metadata_filter, mapping)
+    metadata = toolz.dicttoolz.keymap(
+        lambda k: k.lstrip("@"), toolz.dicttoolz.itemfilter(metadata_filter, mapping)
+    )
 
     # collapse the selected items
     to_collapse = toolz.dicttoolz.keyfilter(lambda x: x in collapse, mapping)
     collapsed = dict(toolz.itertoolz.concat(v.items() for v in to_collapse.values()))
 
-    result = metadata | collapsed
-    return toolz.dicttoolz.keymap(
-        lambda k: utils.strip_namespaces(k, namespaces).lstrip("@"), result
-    )
+    return metadata | collapsed
 
 
 def execute(f, path, kwargs={}):
-    def inner(mapping, namespaces):
+    def inner(mapping):
         subset = utils.query(mapping, path)
 
-        return f(subset, namespaces, **kwargs)
+        return f(subset, **kwargs)
 
     return inner
 
@@ -71,7 +69,7 @@ def read_product(fs, product_url):
     }
 
     converted = toolz.dicttoolz.valmap(
-        lambda x: execute(**x)(decoded, namespaces),
+        lambda x: execute(**x)(decoded),
         layout,
     )
     return converted
