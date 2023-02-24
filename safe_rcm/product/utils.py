@@ -4,6 +4,10 @@ from urllib.parse import urlsplit, urlunsplit
 import toolz
 
 
+def is_scalar(x):
+    return not toolz.itertoolz.isiterable(x) or isinstance(x, (str, bytes))
+
+
 def absolute_url_path(url):
     """convert the url's path component to absolute"""
     if url.count("::") > 1:
