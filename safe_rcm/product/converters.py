@@ -1,7 +1,7 @@
 import toolz
 import xarray as xr
 
-from .utils import split_marked, strip_namespaces
+from . import utils
 
 
 def determine_indexes(columns, hint):
@@ -17,7 +17,7 @@ def determine_indexes(columns, hint):
 
 def preprocess_names(mapping, namespaces):
     def preprocess(name):
-        return strip_namespaces(name, namespaces)
+        return utils.strip_namespaces(name, namespaces)
 
     return toolz.dicttoolz.keymap(preprocess, mapping)
 
@@ -28,7 +28,7 @@ def preprocess_variables(mapping, index_columns):
             return (dims, col)
 
         merged = toolz.dicttoolz.merge_with(list, *col)
-        attrs_, data = split_marked(merged, marker="@")
+        attrs_, data = utils.split_marked(merged, marker="@")
         attrs = toolz.dicttoolz.valmap(toolz.first, attrs_)
 
         return (index_columns, data["$"], attrs)
