@@ -1,6 +1,14 @@
 import toolz
 
 
+def query(mapping, path):
+    if path == "/":
+        return mapping
+
+    keys = path.lstrip("/").split("/")
+    return toolz.dicttoolz.get_in(keys, mapping, no_default=True)
+
+
 def split_marked(mapping, marker="@"):
     groups = toolz.itertoolz.groupby(
         lambda item: item[0].startswith(marker), mapping.items()
