@@ -1,37 +1,8 @@
-import datatree
 import toolz
-import xarray as xr
 from lxml import etree
 
 from ..schema import open_schema
-from . import utils
-
-
-def extract_metadata(
-    mapping,
-    collapse=(),
-    ignore=("@xmlns", "@xmlns:rcm", "@xmlns:xsi", "@xsi:schemaLocation"),
-):
-    def metadata_filter(item):
-        """filter metadata items
-
-        Metadata items are either attributes (the name starts with an '@'), or they are scalars.
-        """
-        k, v = item
-
-        return (k.startswith("@") or utils.is_scalar(v)) and k not in ignore
-
-    # extract the metadata
-    metadata = toolz.dicttoolz.keymap(
-        lambda k: k.lstrip("@"), toolz.dicttoolz.itemfilter(metadata_filter, mapping)
-    )
-
-    # collapse the selected items
-    to_collapse = toolz.dicttoolz.keyfilter(lambda x: x in collapse, mapping)
-    collapsed = dict(toolz.itertoolz.concat(v.items() for v in to_collapse.values()))
-
-    attrs = metadata | collapsed
-    return datatree.DataTree(xr.Dataset(attrs=attrs))
+from . import converters, utils
 
 
 def execute(f, path, kwargs={}):
@@ -66,7 +37,7 @@ def read_product(fs, product_url):
     layout = {
         "/": {
             "path": "/",
-            "f": extract_metadata,
+            "f": converters.extract_metadata,
             "kwargs": {"collapse": ["securityAttributes"]},
         },
     }
