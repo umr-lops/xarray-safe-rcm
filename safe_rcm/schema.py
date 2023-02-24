@@ -20,7 +20,9 @@ def open_schema(fs, root, name, *, glob="*.xsd"):
     xmlschema.XMLSchema
         The opened schema object
     """
-    filelikes = [fs.open(u) for u in fs.glob(f"{root}/{glob}")]
-    sources = sorted(filelikes, key=lambda f: f.full_name.endswith(name), reverse=True)
+    urls = sorted(
+        fs.glob(f"{root}/{glob}"), key=lambda u: u.endswith(name), reverse=True
+    )
+    sources = [fs.open(u) for u in urls]
 
     return xmlschema.XMLSchema(sources)
