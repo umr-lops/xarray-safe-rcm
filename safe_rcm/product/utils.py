@@ -12,7 +12,7 @@ def absolute_url_path(url):
         raise ValueError("don't know how to deal with nested urls")
 
     split = urlsplit(url)
-    absolute_path = posixpath.absolute(split.path)
+    absolute_path = posixpath.abspath(split.path)
 
     return urlunsplit(split._replace(path=absolute_path))
 
