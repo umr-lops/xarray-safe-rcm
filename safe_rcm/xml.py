@@ -1,4 +1,8 @@
+import toolz
 import xmlschema
+from lxml import etree
+
+from .fs_utils import absolute_url_path
 
 
 def open_schema(fs, root, name, *, glob="*.xsd"):
@@ -26,3 +30,26 @@ def open_schema(fs, root, name, *, glob="*.xsd"):
     sources = [fs.open(u) for u in urls]
 
     return xmlschema.XMLSchema(sources)
+
+
+def read_xml(fs, url):
+    tree = etree.fromstring(fs.cat(url))
+
+    namespaces = toolz.dicttoolz.keymap(
+        lambda x: x if x is not None else "rcm", tree.nsmap
+    )
+    schema_location = tree.xpath("./@xsi:schemaLocation", namespaces=namespaces)[0]
+    _, schema_path = schema_location.split(" ")
+
+    if not schema_path.startswith(".."):
+        raise ValueError("schema path is absolute, the code can't handle that yet")
+
+    root, _ = url.rsplit("/", maxsplit=1)
+    schema_url = absolute_url_path(f"{root}/{schema_path}")
+    schema_root, schema_name = schema_url.rsplit("/", maxsplit=1)
+
+    schema = open_schema(fs, schema_root, schema_name)
+
+    decoded = schema.decode(tree)
+
+    return decoded
