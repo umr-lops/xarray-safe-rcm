@@ -13,3 +13,21 @@ def normalize_url_path(url):
     normalized = posixpath.normpath(split.path)
 
     return urlunsplit(split._replace(path=normalized))
+
+
+def dirname(url):
+    split = urlsplit(url)
+    new_path = posixpath.dirname(split.path)
+    return urlunsplit(split._replace(path=new_path))
+
+
+def join_path(url, path):
+    split = urlsplit(url)
+    if posixpath.isabs(path):
+        joined_path = path
+    else:
+        joined_path = posixpath.normpath(posixpath.join(split.path, path))
+
+    joined = split._replace(path=joined_path)
+
+    return urlunsplit(joined)
