@@ -40,3 +40,11 @@ def join_path(url, path):
     joined = split._replace(path=joined_path)
 
     return urlunsplit(joined)
+
+
+def split(url):
+    split = split_url(url)
+
+    dirname, fname = posixpath.split(split.path)
+
+    return urlunsplit(split._replace(path=dirname)), fname
