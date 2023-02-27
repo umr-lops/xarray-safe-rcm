@@ -16,6 +16,7 @@ root_doc = "index"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "myst_parser",
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
     "IPython.sphinxext.ipython_directive",
