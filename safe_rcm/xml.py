@@ -1,10 +1,8 @@
-import posixpath
-
 import toolz
 import xmlschema
 from lxml import etree
 
-from .fs_utils import normalize_url_path
+from . import fs_utils
 
 
 def open_schema(fs, root, name, *, glob="*.xsd"):
@@ -43,12 +41,9 @@ def read_xml(fs, url):
     schema_location = tree.xpath("./@xsi:schemaLocation", namespaces=namespaces)[0]
     _, schema_path = schema_location.split(" ")
 
-    if posixpath.isabs(schema_path):
-        raise ValueError("schema path is absolute, the code can't handle that yet")
-
-    root, _ = url.rsplit("/", maxsplit=1)
-    schema_url = normalize_url_path(f"{root}/{schema_path}")
-    schema_root, schema_name = schema_url.rsplit("/", maxsplit=1)
+    root = fs_utils.dirname(url)
+    schema_url = fs_utils.join_path(root, schema_path)
+    schema_root, schema_name = fs_utils.split(schema_url)
 
     schema = open_schema(fs, schema_root, schema_name)
 
