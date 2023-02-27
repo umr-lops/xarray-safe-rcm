@@ -2,7 +2,7 @@ import posixpath
 from urllib.parse import urlsplit, urlunsplit
 
 
-def absolute_url_path(url):
+def normalize_url_path(url):
     """convert the url's path component to absolute"""
     if url.count("::") > 1:
         # TODO: unlike urllib.parse, `fsspec` allows nested urls

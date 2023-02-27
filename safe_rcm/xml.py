@@ -2,7 +2,7 @@ import toolz
 import xmlschema
 from lxml import etree
 
-from .fs_utils import absolute_url_path
+from .fs_utils import normalize_url_path
 
 
 def open_schema(fs, root, name, *, glob="*.xsd"):
@@ -45,7 +45,7 @@ def read_xml(fs, url):
         raise ValueError("schema path is absolute, the code can't handle that yet")
 
     root, _ = url.rsplit("/", maxsplit=1)
-    schema_url = absolute_url_path(f"{root}/{schema_path}")
+    schema_url = normalize_url_path(f"{root}/{schema_path}")
     schema_root, schema_name = schema_url.rsplit("/", maxsplit=1)
 
     schema = open_schema(fs, schema_root, schema_name)
