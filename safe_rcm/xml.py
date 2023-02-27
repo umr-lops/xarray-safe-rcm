@@ -1,3 +1,5 @@
+import posixpath
+
 import toolz
 import xmlschema
 from lxml import etree
@@ -41,7 +43,7 @@ def read_xml(fs, url):
     schema_location = tree.xpath("./@xsi:schemaLocation", namespaces=namespaces)[0]
     _, schema_path = schema_location.split(" ")
 
-    if not schema_path.startswith(".."):
+    if posixpath.isabs(schema_path):
         raise ValueError("schema path is absolute, the code can't handle that yet")
 
     root, _ = url.rsplit("/", maxsplit=1)
