@@ -41,6 +41,11 @@ def read_product(fs, product_url):
             "f": converters.extract_metadata,
             "kwargs": {"collapse": ["securityAttributes"]},
         },
+        "/imageReferenceAttributes": {
+            "path": "/imageReferenceAttributes",
+            "f": converters.extract_metadata,
+            "kwargs": {},
+        },
     }
 
     converted = toolz.dicttoolz.valmap(
