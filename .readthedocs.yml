@@ -11,7 +11,7 @@ build:
       - git update-index --assume-unchanged doc/conf.py ci/requirements/doc.yml
 
 conda:
-  environment: ci/requirements/docs.yml
+  environment: ci/requirements/docs.yaml
 
 sphinx:
   fail_on_warning: true
