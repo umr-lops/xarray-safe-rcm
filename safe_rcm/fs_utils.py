@@ -1,5 +1,6 @@
 import posixpath
-from urllib.parse import urljoin, urlsplit, urlunsplit
+from urllib.parse import urljoin  # noqa: F401
+from urllib.parse import urlsplit, urlunsplit
 
 
 def split_url(url):
@@ -9,24 +10,6 @@ def split_url(url):
         raise ValueError("don't know how to deal with url chains")
 
     return urlsplit(url)
-
-
-def normalize_url_path(url):
-    """convert the url's path component to absolute"""
-    split = split_url(url)
-    normalized = posixpath.normpath(split.path)
-
-    return urlunsplit(split._replace(path=normalized))
-
-
-def dirname(url):
-    split = split_url(url)
-    new_path = posixpath.dirname(split.path)
-    return urlunsplit(split._replace(path=new_path))
-
-
-def join_path(url, path):
-    return urljoin(url, path)
 
 
 def split(url):
