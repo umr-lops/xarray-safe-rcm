@@ -52,7 +52,7 @@ def convert_table(table, *, namespaces={}, index_hint="first", dtypes={}):
     )
 
 
-def metadata_filter(item, ignore):
+def metadata_filter(item, ignore=()):
     """filter metadata items
 
     Metadata items are either attributes (the name starts with an '@'), or they are scalars.
