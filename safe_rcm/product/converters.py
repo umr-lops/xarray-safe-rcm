@@ -1,4 +1,3 @@
-import datatree
 import toolz
 import xarray as xr
 
@@ -78,4 +77,4 @@ def extract_metadata(
     collapsed = dict(toolz.itertoolz.concat(v.items() for v in to_collapse.values()))
 
     attrs = metadata | collapsed
-    return datatree.DataTree(xr.Dataset(attrs=attrs))
+    return xr.Dataset(attrs=attrs)  # return dataset to avoid bug in datatree
