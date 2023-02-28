@@ -60,10 +60,20 @@ def read_product(fs, product_url):
             "path": "/imageReferenceAttributes",
             "f": converters.extract_metadata,
         },
-        "/geolocationGrid": {
-            "path": "/imageReferenceAttributes/geographicInformation",
-            "f": extract_geographic_information,
-            "kwargs": {},
+        "/geographicInformation/ellipsoidParameters": {
+            "path": "/imageReferenceAttributes/geographicInformation/ellipsoidParameters",
+            "f": toolz.functoolz.curry(transformers.extract_dataset)(dims="params"),
+        },
+        "/geographicInformation/geolocationGrid": {
+            "path": "/imageReferenceAttributes/geographicInformation/geolocationGrid",
+            "f": toolz.functoolz.compose_left(
+                toolz.functoolz.curry(transformers.extract_nested_datatree)(
+                    dims="tie_points"
+                ),
+                lambda tree: xr.merge([node.ds for node in tree.subtree]),
+                lambda ds: ds.set_index(tie_points=["line", "pixel"]),
+                lambda ds: ds.unstack("tie_points"),
+            ),
         },
     }
 
