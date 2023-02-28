@@ -2,7 +2,7 @@ import datatree
 import toolz
 import xarray as xr
 
-from . import utils
+from . import predicates, utils
 
 
 def determine_indexes(columns, hint):
@@ -59,7 +59,7 @@ def metadata_filter(item, ignore=()):
     """
     k, v = item
 
-    return (k.startswith("@") or utils.is_scalar(v)) and k not in ignore
+    return (k.startswith("@") or predicates.is_scalar(v)) and k not in ignore
 
 
 def extract_metadata(
