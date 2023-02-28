@@ -20,32 +20,6 @@ def convert(converters, item):
     return key, converter(value)
 
 
-def extract_geographic_information(mapping):
-    # two keys: ellipsoidParameters and geolocationGrid
-    # processing:
-    # - extract ellipsoidParameters as dataset with dims "params"
-    # - extract geolocationGrid as datatree with dims "tie_points"
-    # - merge geolocationGrid to a dataset
-    # - set_index + unstack on tiepoint → [line, pixel]
-    # - merge both groups into a single dataset
-
-    converter_funcs = {
-        "ellipsoidParameters": toolz.functoolz.curry(transformers.extract_dataset)(
-            dims="params"
-        ),
-        "geolocationGrid": toolz.functoolz.compose_left(
-            toolz.functoolz.curry(transformers.extract_nested_datatree)(
-                dims="tie_points"
-            ),
-            lambda tree: xr.merge([node.ds for node in tree.subtree]),
-            lambda ds: ds.set_index(tie_points=["line", "pixel"]),
-            lambda ds: ds.unstack("tie_points"),
-        ),
-    }
-    converted = toolz.dicttoolz.itemmap(convert(converter_funcs), mapping)
-    return xr.merge(list(converted.values()))
-
-
 def read_product(fs, product_url):
     decoded = read_xml(fs, product_url)
 
