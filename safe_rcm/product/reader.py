@@ -1,3 +1,4 @@
+import datatree
 import toolz
 import xarray as xr
 
@@ -55,4 +56,4 @@ def read_product(fs, product_url):
         lambda x: execute(**x)(decoded),
         layout,
     )
-    return converted
+    return datatree.DataTree.from_dict(converted)
