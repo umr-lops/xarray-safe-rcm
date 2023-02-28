@@ -65,7 +65,7 @@ def read_product(fs, product_url):
             "f": toolz.functoolz.curry(transformers.extract_dataset)(dims="params"),
         },
         "/geographicInformation/geolocationGrid": {
-            "path": "/imageReferenceAttributes/geographicInformation/geolocationGrid",
+            "path": "/imageReferenceAttributes/geographicInformation/geolocationGrid/imageTiePoint",
             "f": toolz.functoolz.compose_left(
                 toolz.functoolz.curry(transformers.extract_nested_datatree)(
                     dims="tie_points"
