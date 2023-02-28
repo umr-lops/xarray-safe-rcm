@@ -6,13 +6,11 @@ from . import converters, transformers
 from .dicttoolz import query
 
 
-def execute(f, path, kwargs={}):
-    def inner(mapping):
-        subset = query(path, mapping)
+@toolz.functoolz.curry
+def execute(mapping, f, path):
+    subset = query(path, mapping)
 
-        return f(subset, **kwargs)
-
-    return inner
+    return f(subset)
 
 
 @toolz.functoolz.curry
@@ -54,13 +52,13 @@ def read_product(fs, product_url):
     layout = {
         "/": {
             "path": "/",
-            "f": converters.extract_metadata,
-            "kwargs": {"collapse": ["securityAttributes"]},
+            "f": toolz.functoolz.curry(converters.extract_metadata)(
+                collapse=["securityAttributes"]
+            ),
         },
         "/imageReferenceAttributes": {
             "path": "/imageReferenceAttributes",
             "f": converters.extract_metadata,
-            "kwargs": {},
         },
         "/geolocationGrid": {
             "path": "/imageReferenceAttributes/geographicInformation",
