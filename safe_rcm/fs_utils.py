@@ -3,10 +3,10 @@ from urllib.parse import urlsplit, urlunsplit
 
 
 def split_url(url):
-    if url.count("::") > 1:
-        # TODO: unlike urllib.parse, `fsspec` allows nested urls
+    if url.count("::") != 0:
+        # TODO: unlike urllib.parse, `fsspec` allows chaining urls
         #       so we need to find a way to support that, as well
-        raise ValueError("don't know how to deal with nested urls")
+        raise ValueError("don't know how to deal with url chains")
 
     return urlsplit(url)
 
