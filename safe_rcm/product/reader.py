@@ -45,7 +45,6 @@ def extract_geographic_information(mapping):
         ),
     }
     converted = toolz.dicttoolz.itemmap(convert(converter_funcs), mapping)
-    print(converted)
     return xr.merge(list(converted.values()))
 
 
