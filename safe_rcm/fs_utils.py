@@ -1,5 +1,5 @@
 import posixpath
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import urljoin, urlsplit, urlunsplit
 
 
 def split_url(url):
@@ -26,15 +26,7 @@ def dirname(url):
 
 
 def join_path(url, path):
-    split = split_url(url)
-    if posixpath.isabs(path):
-        joined_path = path
-    else:
-        joined_path = posixpath.normpath(posixpath.join(split.path, path))
-
-    joined = split._replace(path=joined_path)
-
-    return urlunsplit(joined)
+    return urljoin(url, path)
 
 
 def split(url):
