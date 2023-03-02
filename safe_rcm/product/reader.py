@@ -34,11 +34,11 @@ def read_product(fs, product_url):
             "path": "/imageReferenceAttributes",
             "f": converters.extract_metadata,
         },
-        "/geographicInformation/ellipsoidParameters": {
+        "/imageReferenceAttributes/geographicInformation/ellipsoidParameters": {
             "path": "/imageReferenceAttributes/geographicInformation/ellipsoidParameters",
             "f": curry(transformers.extract_dataset)(dims="params"),
         },
-        "/geographicInformation/geolocationGrid": {
+        "/imageReferenceAttributes/geographicInformation/geolocationGrid": {
             "path": "/imageReferenceAttributes/geographicInformation/geolocationGrid/imageTiePoint",
             "f": compose_left(
                 curry(transformers.extract_nested_datatree)(dims="tie_points"),
