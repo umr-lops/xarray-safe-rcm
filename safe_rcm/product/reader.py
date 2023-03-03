@@ -43,6 +43,44 @@ def read_product(fs, product_url):
             "path": "/",
             "f": curry(converters.extract_metadata)(collapse=["securityAttributes"]),
         },
+        "/sourceAttributes": {
+            "path": "/sourceAttributes",
+            "f": converters.extract_metadata,
+        },
+        "/sourceAttributes/radarParameters": {
+            "path": "/sourceAttributes/radarParameters",
+            "f": transformers.extract_dataset,
+        },
+        "/sourceAttributes/radarParameters/prfInformation": {
+            "path": "/sourceAttributes/radarParameters/prfInformation",
+            "f": transformers.extract_nested_dataset,
+        },
+        "/sourceAttributes/orbitAndAttitude/orbitInformation": {
+            "path": "/sourceAttributes/orbitAndAttitude/orbitInformation",
+            "f": transformers.extract_dataset,
+        },
+        "/sourceAttributes/orbitAndAttitude/orbitInformation/stateVector": {
+            "path": "/sourceAttributes/orbitAndAttitude/orbitInformation/stateVector",
+            "f": compose_left(
+                curry(transformers.extract_nested_dataset)(dims="timeStamp"),
+                lambda ds: ds.assign_coords(
+                    {"timeStamp": ds["timeStamp"].astype("datetime64")}
+                ),
+            ),
+        },
+        "/sourceAttributes/orbitAndAttitude/attitudeInformation": {
+            "path": "/sourceAttributes/orbitAndAttitude/attitudeInformation",
+            "f": transformers.extract_dataset,
+        },
+        "/sourceAttributes/orbitAndAttitude/attitudeInformation/attitudeAngles": {
+            "path": "/sourceAttributes/orbitAndAttitude/attitudeInformation/attitudeAngles",
+            "f": compose_left(
+                curry(transformers.extract_nested_dataset)(dims="timeStamp"),
+                lambda ds: ds.assign_coords(
+                    {"timeStamp": ds["timeStamp"].astype("datetime64")}
+                ),
+            ),
+        },
         "/imageReferenceAttributes": {
             "path": "/imageReferenceAttributes",
             "f": converters.extract_metadata,
