@@ -86,7 +86,7 @@ def extract_dataset(obj, dims=None):
     return xr.Dataset(data_vars=data_vars, attrs=attrs)
 
 
-def extract_nested_variable(obj, dims):
+def extract_nested_variable(obj, dims=None):
     if is_array(obj):
         return xr.Variable(dims, obj)
 
