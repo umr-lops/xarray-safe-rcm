@@ -10,6 +10,7 @@ from .predicates import (
     is_attr,
     is_composite_value,
     is_nested_array,
+    is_nested_dataset,
     is_scalar,
 )
 
@@ -74,10 +75,13 @@ def extract_entry(name, obj, dims=None):
 
 def extract_dataset(obj, dims=None):
     attrs, variables = valsplit(is_scalar, obj)
+    filtered_variables = toolz.dicttoolz.valfilter(
+        lambda x: not is_nested_dataset(x), variables
+    )
 
     vars_ = toolz.dicttoolz.itemmap(
         lambda item: (item[0], extract_entry(*item, dims=dims)),
-        variables,
+        filtered_variables,
     )
     return xr.Dataset(data_vars=vars_, attrs=attrs)
 
