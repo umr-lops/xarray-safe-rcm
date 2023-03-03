@@ -2,7 +2,7 @@ import datatree
 import numpy as np
 import toolz
 import xarray as xr
-from toolz.functoolz import flip
+from toolz.functoolz import curry, flip
 
 from .dicttoolz import keysplit, valsplit
 from .predicates import (
@@ -149,11 +149,29 @@ def extract_nested_dataset(obj, dims=None):
         raise ValueError(f"unknown type: {type(obj)}")
 
     columns = toolz.dicttoolz.merge_with(list, *obj)
-    processed = toolz.dicttoolz.valmap(
-        toolz.functoolz.curry(extract_nested_variable)(dims=dims), columns
+
+    attributes, data = keysplit(flip(str.startswith, "@"), columns)
+    renamed = toolz.dicttoolz.keymap(flip(str.lstrip, "@"), attributes)
+    preprocessed = toolz.dicttoolz.valmap(np.squeeze, renamed)
+    attrs_, indexes = valsplit(is_attr, preprocessed)
+
+    attrs = toolz.dicttoolz.valmap(toolz.itertoolz.first, attrs_)
+
+    if dims is None:
+        if len(indexes) <= 1:
+            dims = list(indexes)
+        else:
+            dims = ["stacked"]
+
+    data_vars = toolz.dicttoolz.valmap(curry(extract_nested_variable)(dims=dims), data)
+    coords = toolz.dicttoolz.itemmap(
+        lambda it: (it[0], to_variable_tuple(*it, dims=dims)),
+        indexes,
     )
 
-    return xr.Dataset(processed)
+    return xr.Dataset(data_vars=data_vars, coords=coords, attrs=attrs).pipe(
+        unstack, dim="stacked"
+    )
 
 
 def extract_nested_datatree(obj, dims=None):
@@ -161,7 +179,6 @@ def extract_nested_datatree(obj, dims=None):
         raise ValueError(f"unknown type: {type(obj)}")
 
     datasets = toolz.dicttoolz.merge_with(list, *obj)
-
     tree = toolz.dicttoolz.valmap(
         toolz.functoolz.curry(extract_nested_dataset)(dims=dims), datasets
     )
