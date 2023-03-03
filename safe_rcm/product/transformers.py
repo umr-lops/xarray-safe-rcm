@@ -79,11 +79,11 @@ def extract_dataset(obj, dims=None):
         lambda x: not is_nested_dataset(x), variables
     )
 
-    vars_ = toolz.dicttoolz.itemmap(
+    data_vars = toolz.dicttoolz.itemmap(
         lambda item: (item[0], extract_entry(*item, dims=dims)),
         filtered_variables,
     )
-    return xr.Dataset(data_vars=vars_, attrs=attrs)
+    return xr.Dataset(data_vars=data_vars, attrs=attrs)
 
 
 def extract_nested_variable(obj, dims):
