@@ -18,16 +18,22 @@ def convert_composite(value):
         return "complex", converted["real"] + 1j * converted["imaginary"]
 
 
+def extract_array(obj, dims):
+    # special case for pulses:
+    if dims == "pulses" and len(obj) == 1 and isinstance(obj[0], str):
+        obj = obj[0].split()
+    return xr.Variable(dims, obj)
+
+
+def extract_composite(obj, dims=()):
+    type_, value = convert_composite(obj)
+
+    if is_scalar(value):
+        dims = ()
+    return xr.Variable(dims, value, {"type": type_})
+
+
 def extract_variable(obj, dims=()):
-    if is_array(obj):
-        return xr.Variable(dims, obj)
-    elif is_composite_value(obj):
-        type_, value = convert_composite(obj)
-
-        if is_scalar(value):
-            dims = ()
-        return xr.Variable(dims, value, {"type": type_})
-
     attributes, data = keysplit(lambda k: k.startswith("@"), obj)
     if list(data) != ["$"]:
         raise ValueError("not a variable")
