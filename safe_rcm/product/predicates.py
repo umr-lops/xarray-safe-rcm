@@ -54,6 +54,16 @@ def is_array(obj):
     return False
 
 
+def is_scalar_variable(obj):
+    if not isinstance(obj, dict):
+        return False
+
+    if not all(is_scalar(v) for v in obj.values()):
+        return False
+
+    return all(k == "$" or k.startswith("@") for k in obj)
+
+
 def is_nested(obj):
     """nested means: list of dict, but all dict values are scalar or 1-valued"""
     if not isinstance(obj, list) or len(obj) == 0:
