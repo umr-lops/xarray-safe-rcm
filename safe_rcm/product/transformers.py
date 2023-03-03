@@ -72,7 +72,7 @@ def extract_entry(name, obj, dims=None):
         raise ValueError(f"unknown datastructure:\n{obj}")
 
 
-def extract_dataset(obj, dims=()):
+def extract_dataset(obj, dims=None):
     attrs, variables = valsplit(is_scalar, obj)
 
     vars_ = toolz.dicttoolz.itemmap(
