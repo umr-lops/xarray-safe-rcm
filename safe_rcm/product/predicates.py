@@ -73,10 +73,13 @@ def is_nested(obj):
     if not isinstance(elem, dict):
         return False
 
-    return all(
-        is_scalar(value) or (isinstance(value, list) and len(value) == 1)
-        for value in elem.values()
-    )
+    if all(
+        is_scalar(v) or (is_array(v) and len(v) == 1) or is_scalar_variable(v)
+        for v in elem.values()
+    ):
+        return True
+
+    return False
 
 
 def is_nested_array(obj):
