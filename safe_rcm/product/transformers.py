@@ -1,9 +1,17 @@
 import datatree
+import numpy as np
 import toolz
 import xarray as xr
+from toolz.functoolz import flip
 
 from .dicttoolz import keysplit, valsplit
-from .predicates import is_array, is_composite_value, is_scalar
+from .predicates import (
+    is_array,
+    is_attr,
+    is_composite_value,
+    is_nested_array,
+    is_scalar,
+)
 
 
 def convert_composite(value):
@@ -58,6 +66,8 @@ def extract_entry(name, obj, dims=None):
         return extract_composite(obj, dims=dims)
     elif isinstance(obj, dict):
         return extract_variable(obj, dims=dims)
+    elif is_nested_array(obj):
+        return extract_nested_array(obj).rename(name)
     else:
         raise ValueError(f"unknown datastructure:\n{obj}")
 
@@ -82,6 +92,51 @@ def extract_nested_variable(obj, dims):
     attrs = toolz.dicttoolz.valmap(toolz.itertoolz.first, renamed)
 
     return xr.Variable(dims, data["$"], attrs)
+
+
+def unstack(obj, dim="stacked"):
+    if dim not in obj.dims:
+        return obj
+
+    stacked_coords = [name for name, arr in obj.coords.items() if dim in arr.dims]
+
+    return obj.set_index({dim: stacked_coords}).unstack(dim)
+
+
+def extract_nested_array(obj):
+    def to_variable_tuple(name, value, dims):
+        if name in dims:
+            dims_ = [name]
+        else:
+            dims_ = dims
+
+        return (dims_, value)
+
+    columns = toolz.dicttoolz.merge_with(list, *obj)
+
+    attributes, data = keysplit(flip(str.startswith, "@"), columns)
+    renamed = toolz.dicttoolz.keymap(flip(str.lstrip, "@"), attributes)
+    preprocessed = toolz.dicttoolz.valmap(np.squeeze, renamed)
+    attrs_, indexes = valsplit(is_attr, preprocessed)
+
+    if len(indexes) == 1:
+        dims = list(indexes)
+    else:
+        dims = ["stacked"]
+
+    coords = toolz.dicttoolz.itemmap(
+        lambda it: (it[0], to_variable_tuple(*it, dims=dims)),
+        indexes,
+    )
+
+    arr = xr.DataArray(
+        data=data["$"],
+        attrs=toolz.dicttoolz.valmap(toolz.itertoolz.first, attrs_),
+        dims=dims,
+        coords=coords,
+    )
+
+    return arr.pipe(unstack, dim="stacked")
 
 
 def extract_nested_dataset(obj, dims=None):
