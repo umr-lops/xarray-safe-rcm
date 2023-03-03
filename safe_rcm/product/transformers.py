@@ -107,15 +107,16 @@ def unstack(obj, dim="stacked"):
     return obj.set_index({dim: stacked_coords}).unstack(dim)
 
 
+def to_variable_tuple(name, value, dims):
+    if name in dims:
+        dims_ = [name]
+    else:
+        dims_ = dims
+
+    return (dims_, value)
+
+
 def extract_nested_array(obj):
-    def to_variable_tuple(name, value, dims):
-        if name in dims:
-            dims_ = [name]
-        else:
-            dims_ = dims
-
-        return (dims_, value)
-
     columns = toolz.dicttoolz.merge_with(list, *obj)
 
     attributes, data = keysplit(flip(str.startswith, "@"), columns)
