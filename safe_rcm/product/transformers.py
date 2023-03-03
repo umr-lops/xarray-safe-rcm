@@ -47,11 +47,27 @@ def extract_variable(obj, dims=()):
     return xr.Variable(dims, values, attrs)
 
 
+def extract_entry(name, obj, dims=None):
+    if dims is None:
+        dims = [name]
+
+    if is_array(obj):
+        # dimension coordinate
+        return extract_array(obj, dims=dims)
+    elif is_composite_value(obj):
+        return extract_composite(obj, dims=dims)
+    elif isinstance(obj, dict):
+        return extract_variable(obj, dims=dims)
+    else:
+        raise ValueError(f"unknown datastructure:\n{obj}")
+
+
 def extract_dataset(obj, dims=()):
     attrs, variables = valsplit(is_scalar, obj)
 
-    vars_ = toolz.dicttoolz.valmap(
-        toolz.functoolz.curry(extract_variable)(dims=dims), variables
+    vars_ = toolz.dicttoolz.itemmap(
+        lambda item: (item[0], extract_entry(*item, dims=dims)),
+        variables,
     )
     return xr.Dataset(data_vars=vars_, attrs=attrs)
 
