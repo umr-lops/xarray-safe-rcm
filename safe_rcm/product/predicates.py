@@ -73,6 +73,10 @@ def is_nested_array(obj):
     return is_nested(obj) and "$" in obj[0]
 
 
+def is_nested_dataset(obj):
+    return is_nested(obj) and "$" not in obj[0]
+
+
 def is_attr(column):
     """an attribute is a index if it has multiple unique values"""
     return np.unique(column).size == 1
