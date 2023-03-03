@@ -51,3 +51,22 @@ def is_array(obj):
             return True
 
     return False
+
+
+def is_nested(obj):
+    """nested means: list of dict, but all dict values are scalar or 1-valued"""
+    if not isinstance(obj, list) or len(obj) == 0:
+        return False
+
+    elem = obj[0]
+    if not isinstance(elem, dict):
+        return False
+
+    return all(
+        is_scalar(value) or (isinstance(value, list) and len(value) == 1)
+        for value in elem.values()
+    )
+
+
+def is_nested_array(obj):
+    return is_nested(obj) and "$" in obj[0]
