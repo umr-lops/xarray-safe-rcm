@@ -1,5 +1,6 @@
 import numpy as np
 import toolz
+from toolz.functoolz import compose, juxt
 
 
 def is_scalar(x):
@@ -90,12 +91,12 @@ def is_nested_dataset(obj):
     return is_nested(obj) and "$" not in obj[0]
 
 
-def or_(obj, *funcs):
-    return any(toolz.functoolz.juxt(*funcs)(obj))
+def disjunction(*predicates):
+    return compose(any, juxt(predicates))
 
 
-def and_(obj, *funcs):
-    return all(toolz.functoolz.juxt(*funcs)(obj))
+def conjunction(*predicates):
+    return compose(all, juxt(predicates))
 
 
 def is_attr(column):
