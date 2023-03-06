@@ -14,6 +14,8 @@ from .predicates import (
     is_scalar,
 )
 
+ignore = ["@xmlns", "@xmlns:xsi", "@xsi:schemaLocation"]
+
 
 def convert_composite(value):
     if not is_composite_value(value):
@@ -74,7 +76,8 @@ def extract_entry(name, obj, dims=None):
 
 
 def extract_dataset(obj, dims=None):
-    attrs, variables = valsplit(is_scalar, obj)
+    filtered = toolz.dicttoolz.keyfilter(lambda x: x not in ignore, obj)
+    attrs, variables = valsplit(is_scalar, filtered)
     if len(variables) == 1 and is_nested_dataset(first_values(variables)):
         return extract_nested_dataset(first_values(variables), dims=dims).assign_attrs(
             attrs
