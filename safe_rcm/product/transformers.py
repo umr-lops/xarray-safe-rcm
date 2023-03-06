@@ -68,7 +68,7 @@ def extract_entry(name, obj, dims=None):
     elif isinstance(obj, dict):
         return extract_variable(obj, dims=dims)
     elif is_nested_array(obj):
-        return extract_nested_array(obj).rename(name)
+        return extract_nested_array(obj, dims=dims).rename(name)
     else:
         raise ValueError(f"unknown datastructure:\n{obj}")
 
@@ -121,7 +121,7 @@ def to_variable_tuple(name, value, dims):
     return (dims_, value)
 
 
-def extract_nested_array(obj):
+def extract_nested_array(obj, dims=None):
     columns = toolz.dicttoolz.merge_with(list, *obj)
 
     attributes, data = keysplit(flip(str.startswith, "@"), columns)
@@ -130,7 +130,9 @@ def extract_nested_array(obj):
     attrs_, indexes = valsplit(is_attr, preprocessed_attrs)
     preprocessed_data = toolz.dicttoolz.valmap(np.squeeze, data)
 
-    if len(indexes) == 1:
+    if dims is not None:
+        pass
+    elif len(indexes) == 1:
         dims = list(indexes)
     else:
         dims = ["stacked"]
