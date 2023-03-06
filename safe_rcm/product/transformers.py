@@ -14,7 +14,7 @@ from .predicates import (
     is_scalar,
 )
 
-ignore = ["@xmlns", "@xmlns:xsi", "@xsi:schemaLocation"]
+ignore = ("@xmlns", "@xmlns:xsi", "@xsi:schemaLocation")
 
 
 def convert_composite(value):
