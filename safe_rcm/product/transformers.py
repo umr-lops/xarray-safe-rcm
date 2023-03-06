@@ -91,13 +91,7 @@ def extract_entry(name, obj, dims=None):
     elif isinstance(obj, dict):
         return extract_variable(obj, dims=dims)
     elif is_nested_array(obj):
-        return (
-            extract_nested_array(obj)
-            .rename(name)
-            .pipe(
-                lambda obj: obj if "$" not in obj.dims else obj.swap_dims({"$": name})
-            )
-        )
+        return extract_nested_array(obj).pipe(rename, name)
     else:
         raise ValueError(f"unknown datastructure:\n{obj}")
 
@@ -140,6 +134,17 @@ def unstack(obj, dim="stacked"):
     stacked_coords = [name for name, arr in obj.coords.items() if dim in arr.dims]
 
     return obj.set_index({dim: stacked_coords}).unstack(dim)
+
+
+def rename(obj, name):
+    renamed = obj.rename(name)
+    if "$" not in obj.dims:
+        return renamed
+
+    if len(obj.dims) != 1:
+        raise ValueError(f"unexpected number of dimensions: {list(obj.dims)}")
+
+    return renamed.swap_dims({"$": name})
 
 
 def to_variable_tuple(name, value, dims):
