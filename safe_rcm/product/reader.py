@@ -36,8 +36,8 @@ def convert(converters, item):
     return key, converter(value)
 
 
-def read_product(fs, product_url):
-    decoded = read_xml(fs, product_url)
+def read_product(mapper, product_path):
+    decoded = read_xml(mapper, product_path)
 
     layout = {
         "/": {
