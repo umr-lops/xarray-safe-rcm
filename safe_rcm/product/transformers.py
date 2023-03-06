@@ -91,7 +91,13 @@ def extract_entry(name, obj, dims=None):
     elif isinstance(obj, dict):
         return extract_variable(obj, dims=dims)
     elif is_nested_array(obj):
-        return extract_nested_array(obj).rename(name)
+        return (
+            extract_nested_array(obj)
+            .rename(name)
+            .pipe(
+                lambda obj: obj if "$" not in obj.dims else obj.swap_dims({"$": name})
+            )
+        )
     else:
         raise ValueError(f"unknown datastructure:\n{obj}")
 
