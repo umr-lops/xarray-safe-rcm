@@ -90,6 +90,14 @@ def is_nested_dataset(obj):
     return is_nested(obj) and "$" not in obj[0]
 
 
+def or_(obj, *funcs):
+    return any(toolz.functoolz.juxt(*funcs)(obj))
+
+
+def and_(obj, *funcs):
+    return all(toolz.functoolz.juxt(*funcs)(obj))
+
+
 def is_attr(column):
     """an attribute is a index if it has multiple unique values"""
     return np.unique(column).size == 1
