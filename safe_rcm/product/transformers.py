@@ -154,12 +154,12 @@ def extract_nested_array(obj, dims=None):
     attrs_, indexes = valsplit(is_attr, preprocessed_attrs)
     preprocessed_data = toolz.dicttoolz.valmap(np.squeeze, data)
 
-    if dims is not None:
-        pass
-    elif len(indexes) == 1:
+    if len(indexes) == 1:
         dims = list(indexes)
-    else:
+    elif len(indexes) >= 2:
         dims = ["stacked"]
+    elif dims is None:
+        dims = ["$"]
 
     coords = toolz.dicttoolz.itemmap(
         lambda it: (it[0], to_variable_tuple(*it, dims=dims)),
