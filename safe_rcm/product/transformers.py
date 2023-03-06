@@ -4,7 +4,7 @@ import toolz
 import xarray as xr
 from toolz.functoolz import curry, flip
 
-from .dicttoolz import keysplit, valsplit
+from .dicttoolz import first_values, keysplit, valsplit
 from .predicates import (
     is_array,
     is_attr,
@@ -75,6 +75,11 @@ def extract_entry(name, obj, dims=None):
 
 def extract_dataset(obj, dims=None):
     attrs, variables = valsplit(is_scalar, obj)
+    if len(variables) == 1 and is_nested_dataset(first_values(variables)):
+        return extract_nested_dataset(first_values(variables), dims=dims).assign_attrs(
+            attrs
+        )
+
     filtered_variables = toolz.dicttoolz.valfilter(
         lambda x: not is_nested_dataset(x), variables
     )
