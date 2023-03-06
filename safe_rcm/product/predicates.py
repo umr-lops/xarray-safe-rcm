@@ -1,10 +1,10 @@
 import numpy as np
-import toolz
 from toolz.functoolz import compose, juxt
+from toolz.itertoolz import isiterable
 
 
 def is_scalar(x):
-    return not toolz.itertoolz.isiterable(x) or isinstance(x, (str, bytes))
+    return not isiterable(x) or isinstance(x, (str, bytes))
 
 
 def is_composite_value(obj):
