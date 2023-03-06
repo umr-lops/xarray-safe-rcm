@@ -4,7 +4,7 @@ import xarray as xr
 from toolz.functoolz import compose_left, curry
 
 from ..xml import read_xml
-from . import converters, transformers
+from . import transformers
 from .dicttoolz import query
 from .predicates import disjunction, is_nested_array, is_scalar_valued
 
@@ -42,11 +42,11 @@ def read_product(mapper, product_path):
     layout = {
         "/": {
             "path": "/",
-            "f": curry(converters.extract_metadata)(collapse=["securityAttributes"]),
+            "f": curry(transformers.extract_metadata)(collapse=["securityAttributes"]),
         },
         "/sourceAttributes": {
             "path": "/sourceAttributes",
-            "f": converters.extract_metadata,
+            "f": transformers.extract_metadata,
         },
         "/sourceAttributes/radarParameters": {
             "path": "/sourceAttributes/radarParameters",

@@ -29,6 +29,27 @@ def convert_composite(value):
         return "complex", converted["real"] + 1j * converted["imaginary"]
 
 
+def extract_metadata(
+    mapping,
+    collapse=(),
+    ignore=ignore,
+):
+    without_ignores = toolz.dicttoolz.keyfilter(lambda k: k not in ignore, mapping)
+    # extract the metadata
+    metadata_ = toolz.dicttoolz.itemfilter(
+        lambda it: it[0].startswith("@") or is_scalar(it[1]),
+        without_ignores,
+    )
+    metadata = toolz.dicttoolz.keymap(flip(str.lstrip, "@"), metadata_)
+
+    # collapse the selected items
+    to_collapse = toolz.dicttoolz.keyfilter(lambda x: x in collapse, mapping)
+    collapsed = dict(toolz.itertoolz.concat(v.items() for v in to_collapse.values()))
+
+    attrs = metadata | collapsed
+    return xr.Dataset(attrs=attrs)  # return dataset to avoid bug in datatree
+
+
 def extract_array(obj, dims):
     # special case for pulses:
     if dims == "pulses" and len(obj) == 1 and isinstance(obj[0], str):
