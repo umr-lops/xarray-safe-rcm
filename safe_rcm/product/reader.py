@@ -29,13 +29,6 @@ def execute(mapping, f, path):
     return compose_left(f, attach_path(path=path))(subset)
 
 
-@curry
-def convert(converters, item):
-    key, value = item
-    converter = converters.get(key, lambda x: x)
-    return key, converter(value)
-
-
 def read_product(mapper, product_path):
     decoded = read_xml(mapper, product_path)
 
