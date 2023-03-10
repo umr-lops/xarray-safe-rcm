@@ -5,7 +5,7 @@ import datatree
 import fsspec
 import xarray as xr
 from toolz.dicttoolz import valmap
-from toolz.functoolz import compose_left, curry
+from toolz.functoolz import compose_left, curry, juxt
 
 from .product.reader import read_product
 from .product.transformers import extract_dataset
@@ -41,9 +41,30 @@ def open_rcm(url, *, backend_kwargs=None, **dataset_kwargs):
                 lambda obj: obj.attrs["incidenceAngleFileName"],
                 lambda p: posixpath.join(calibration_root, p),
                 curry(read_xml)(mapper),
-                extract_dataset,
+                curry(extract_dataset)(dims="coefficients"),
             ),
-        }
+        },
+        "/lookupTables": {
+            "path": "/imageReferenceAttributes/lookupTableFileName",
+            "f": compose_left(
+                lambda obj: obj.stack(stacked=["sarCalibrationType", "pole"]),
+                juxt(
+                    lambda obj: obj.to_dataset(),
+                    compose_left(
+                        lambda obj: obj.to_series().to_dict(),
+                        curry(valmap)(lambda p: posixpath.join(calibration_root, p)),
+                        curry(valmap)(curry(read_xml)(mapper)),
+                        curry(valmap)(curry(extract_dataset)(dims="coefficients")),
+                        curry(valmap)(lambda ds: ds["gains"].assign_attrs(ds.attrs)),
+                        lambda d: xr.concat(list(d.values()), dim="stacked"),
+                    ),
+                ),
+                lambda it: it[0].assign({"mapped": it[1]}),
+                lambda ds: ds["mapped"],
+                lambda arr: arr.unstack("stacked"),
+                lambda arr: arr.rename("lookup_tables"),
+            ),
+        },
     }
     calibration = valmap(
         lambda x: execute(**x)(tree),
