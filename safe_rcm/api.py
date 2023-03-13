@@ -19,6 +19,7 @@ def execute(tree, f, path):
     return f(node)
 
 
+@curry
 def starcall(f, args):
     return f(*args)
 
@@ -64,7 +65,7 @@ def open_rcm(url, *, backend_kwargs=None, **dataset_kwargs):
                     ),
                     lambda obj: obj.coords,
                 ),
-                curry(starcall)(lambda arr, coords: arr.assign_coords(coords)),
+                starcall(lambda arr, coords: arr.assign_coords(coords)),
                 lambda arr: arr.set_index({"stacked": ["sarCalibrationType", "pole"]}),
                 lambda arr: arr.unstack("stacked"),
                 lambda arr: arr.rename("lookup_tables"),
