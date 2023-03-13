@@ -19,6 +19,10 @@ def execute(tree, f, path):
     return f(node)
 
 
+def starcall(f, args):
+    return f(*args)
+
+
 def open_rcm(url, *, backend_kwargs=None, **dataset_kwargs):
     if not isinstance(url, (str, os.PathLike)):
         raise ValueError(f"cannot deal with object of type {type(url)}: {url}")
@@ -48,8 +52,8 @@ def open_rcm(url, *, backend_kwargs=None, **dataset_kwargs):
             "path": "/imageReferenceAttributes/lookupTableFileName",
             "f": compose_left(
                 lambda obj: obj.stack(stacked=["sarCalibrationType", "pole"]),
+                lambda obj: obj.reset_index("stacked"),
                 juxt(
-                    lambda obj: obj.to_dataset(),
                     compose_left(
                         lambda obj: obj.to_series().to_dict(),
                         curry(valmap)(lambda p: posixpath.join(calibration_root, p)),
@@ -58,9 +62,10 @@ def open_rcm(url, *, backend_kwargs=None, **dataset_kwargs):
                         curry(valmap)(lambda ds: ds["gains"].assign_attrs(ds.attrs)),
                         lambda d: xr.concat(list(d.values()), dim="stacked"),
                     ),
+                    lambda obj: obj.coords,
                 ),
-                lambda it: it[0].assign({"mapped": it[1]}),
-                lambda ds: ds["mapped"],
+                curry(starcall)(lambda arr, coords: arr.assign_coords(coords)),
+                lambda arr: arr.set_index({"stacked": ["sarCalibrationType", "pole"]}),
                 lambda arr: arr.unstack("stacked"),
                 lambda arr: arr.rename("lookup_tables"),
             ),
