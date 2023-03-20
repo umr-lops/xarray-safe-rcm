@@ -97,7 +97,7 @@ def open_rcm(url, *, backend_kwargs=None, **dataset_kwargs):
     imagery_dss = valmap(
         compose_left(
             curry(mapper.fs.open),
-            curry(xr.open_dataset, engine="rasterio", chunks={}),
+            curry(xr.open_dataset, engine="rasterio", **dataset_kwargs),
         ),
         imagery_urls,
     )
