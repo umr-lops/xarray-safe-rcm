@@ -7,6 +7,7 @@ import xarray as xr
 from toolz.dicttoolz import valmap
 from toolz.functoolz import compose_left, curry, juxt
 
+from .calibrations import read_noise_levels
 from .product.reader import read_product
 from .product.transformers import extract_dataset
 from .xml import read_xml
@@ -70,6 +71,10 @@ def open_rcm(url, *, backend_kwargs=None, **dataset_kwargs):
                 lambda arr: arr.unstack("stacked"),
                 lambda arr: arr.rename("lookup_tables"),
             ),
+        },
+        "/noiseLevels": {
+            "path": "/imageReferenceAttributes/noiseLevelFileName",
+            "f": curry(read_noise_levels, mapper),
         },
     }
     calibration = valmap(
