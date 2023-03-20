@@ -1,3 +1,5 @@
+import posixpath
+
 import datatree
 import numpy as np
 import xarray as xr
@@ -93,7 +95,10 @@ def read_noise_level_file(mapper, path):
     return converted
 
 
-def read_noise_levels(mapper, paths):
+def read_noise_levels(mapper, root, fnames):
+    fnames = fnames.data.tolist()
+    paths = [posixpath.join(root, name) for name in fnames]
+
     poles = [path.removesuffix(".xml").split("_")[1] for path in paths]
     trees = [read_noise_level_file(mapper, path) for path in paths]
     merged = merge_with(list, *trees)

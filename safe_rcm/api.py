@@ -74,7 +74,7 @@ def open_rcm(url, *, backend_kwargs=None, **dataset_kwargs):
         },
         "/noiseLevels": {
             "path": "/imageReferenceAttributes/noiseLevelFileName",
-            "f": curry(read_noise_levels, mapper),
+            "f": curry(read_noise_levels, mapper, calibration_root),
         },
     }
     calibration = valmap(
