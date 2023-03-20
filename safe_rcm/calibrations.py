@@ -79,7 +79,6 @@ def read_noise_level_file(mapper, path):
             "path": "/azimuthNoiseLevelScaling",
             "f": compose_left(
                 curry(map, _read_level),
-                curry(map, lambda ds: ds.expand_dims("sarCalibrationType")),
                 list,
                 pad_common,
                 curry(xr.combine_by_coords, combine_attrs="drop_conflicts"),
