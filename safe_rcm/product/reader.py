@@ -7,11 +7,11 @@ from .dicttoolz import query
 from .predicates import disjunction, is_nested_array, is_scalar_valued
 
 try:
-    from cytoolz.dicttoolz import keyfilter, valfilter, valmap
+    from cytoolz.dicttoolz import keyfilter, merge_with, valfilter, valmap
     from cytoolz.functoolz import compose_left, curry
     from cytoolz.itertoolz import first
 except ImportError:
-    from toolz.dicttoolz import keyfilter, valfilter, valmap
+    from toolz.dicttoolz import keyfilter, merge_with, valfilter, valmap
     from toolz.functoolz import compose_left, curry
     from toolz.itertoolz import first
 
@@ -83,6 +83,23 @@ def read_product(mapper, product_path):
             "f": compose_left(
                 curry(keyfilter, lambda k: k not in {"azimuthWindow", "rangeWindow"}),
                 transformers.extract_dataset,
+            ),
+        },
+        "/imageGenerationParameters/slantRangeToGroundRange": {
+            "path": "/imageGenerationParameters/slantRangeToGroundRange",
+            "f": compose_left(
+                lambda el: merge_with(list, *el),
+                curry(
+                    transformers.extract_dataset,
+                    dims={
+                        "slantRangeTimeToFirstRangeSample": ["zeroDopplerAzimuthTime"],
+                        "groundRangeOrigin": ["zeroDopplerAzimuthTime"],
+                        "groundToSlantRangeCoefficients": [
+                            "zeroDopplerAzimuthTime",
+                            "coefficients",
+                        ],
+                    },
+                ),
             ),
         },
         "/imageReferenceAttributes": {
