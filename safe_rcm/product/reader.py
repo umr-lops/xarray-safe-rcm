@@ -74,6 +74,17 @@ def read_product(mapper, product_path):
                 ),
             ),
         },
+        "/imageGenerationParameters/generalProcessingInformation": {
+            "path": "/imageGenerationParameters/generalProcessingInformation",
+            "f": transformers.extract_metadata,
+        },
+        "/imageGenerationParameters/sarProcessingInformation": {
+            "path": "/imageGenerationParameters/sarProcessingInformation",
+            "f": compose_left(
+                curry(keyfilter, lambda k: k not in {"azimuthWindow", "rangeWindow"}),
+                transformers.extract_dataset,
+            ),
+        },
         "/imageReferenceAttributes": {
             "path": "/imageReferenceAttributes",
             "f": compose_left(
