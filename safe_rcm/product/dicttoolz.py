@@ -1,4 +1,9 @@
-import toolz
+try:
+    from cytoolz.dicttoolz import get_in
+    from cytoolz.itertoolz import first, groupby
+except ImportError:
+    from toolz.dicttoolz import get_in
+    from toolz.itertoolz import first, groupby
 
 
 def query(path, mapping):
@@ -6,11 +11,11 @@ def query(path, mapping):
         return mapping
 
     keys = path.lstrip("/").split("/")
-    return toolz.dicttoolz.get_in(keys, mapping, no_default=True)
+    return get_in(keys, mapping, no_default=True)
 
 
 def itemsplit(predicate, d):
-    groups = toolz.itertoolz.groupby(predicate, d.items())
+    groups = groupby(predicate, d.items())
     first = dict(groups.get(True, ()))
     second = dict(groups.get(False, ()))
 
@@ -28,4 +33,4 @@ def keysplit(predicate, d):
 
 
 def first_values(d):
-    return toolz.itertoolz.first(d.values())
+    return first(d.values())

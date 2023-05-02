@@ -1,12 +1,19 @@
 import datatree
-import toolz
 import xarray as xr
-from toolz.functoolz import compose_left, curry
 
 from ..xml import read_xml
 from . import transformers
 from .dicttoolz import query
 from .predicates import disjunction, is_nested_array, is_scalar_valued
+
+try:
+    from cytoolz.dicttoolz import keyfilter, valfilter, valmap
+    from cytoolz.functoolz import compose_left, curry
+    from cytoolz.itertoolz import first
+except ImportError:
+    from toolz.dicttoolz import keyfilter, valfilter, valmap
+    from toolz.functoolz import compose_left, curry
+    from toolz.itertoolz import first
 
 
 @curry
@@ -70,9 +77,7 @@ def read_product(mapper, product_path):
         "/imageReferenceAttributes": {
             "path": "/imageReferenceAttributes",
             "f": compose_left(
-                curry(toolz.dicttoolz.valfilter)(
-                    disjunction(is_scalar_valued, is_nested_array)
-                ),
+                curry(valfilter)(disjunction(is_scalar_valued, is_nested_array)),
                 transformers.extract_dataset,
             ),
         },
@@ -100,14 +105,14 @@ def read_product(mapper, product_path):
         "/sceneAttributes": {
             "path": "/sceneAttributes/imageAttributes",
             "f": compose_left(
-                toolz.itertoolz.first,  # GRD datasets only have 1
-                curry(toolz.dicttoolz.keyfilter)(lambda x: not x.startswith("@")),
+                first,  # GRD datasets only have 1
+                curry(keyfilter)(lambda x: not x.startswith("@")),
                 transformers.extract_dataset,
             ),
         },
     }
 
-    converted = toolz.dicttoolz.valmap(
+    converted = valmap(
         lambda x: execute(**x)(decoded),
         layout,
     )

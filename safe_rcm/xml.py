@@ -1,8 +1,12 @@
 import posixpath
 
-import toolz
 import xmlschema
 from lxml import etree
+
+try:
+    from cytoolz.dicttoolz import keymap
+except ImportError:
+    from toolz.dicttoolz import keymap
 
 
 def open_schema(mapper, root, name, *, glob="*.xsd"):
@@ -39,9 +43,7 @@ def read_xml(mapper, path):
     raw_data = mapper[path]
     tree = etree.fromstring(raw_data)
 
-    namespaces = toolz.dicttoolz.keymap(
-        lambda x: x if x is not None else "rcm", tree.nsmap
-    )
+    namespaces = keymap(lambda x: x if x is not None else "rcm", tree.nsmap)
     schema_location = tree.xpath("./@xsi:schemaLocation", namespaces=namespaces)[0]
     _, schema_path_ = schema_location.split(" ")
 

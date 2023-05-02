@@ -1,8 +1,6 @@
 import datatree
 import numpy as np
-import toolz
 import xarray as xr
-from toolz.functoolz import curry, flip
 
 from .dicttoolz import first_values, keysplit, valsplit
 from .predicates import (
@@ -13,6 +11,32 @@ from .predicates import (
     is_nested_dataset,
     is_scalar,
 )
+
+try:
+    from cytoolz.dicttoolz import (
+        itemfilter,
+        itemmap,
+        keyfilter,
+        keymap,
+        merge_with,
+        valfilter,
+        valmap,
+    )
+    from cytoolz.functoolz import curry, flip
+    from cytoolz.itertoolz import concat, first
+except ImportError:
+    from toolz.dicttoolz import (
+        itemfilter,
+        itemmap,
+        keyfilter,
+        keymap,
+        merge_with,
+        valfilter,
+        valmap,
+    )
+    from toolz.functoolz import curry, flip
+    from toolz.itertoolz import concat, first
+
 
 ignore = ("@xmlns", "@xmlns:xsi", "@xsi:schemaLocation")
 
@@ -34,17 +58,17 @@ def extract_metadata(
     collapse=(),
     ignore=ignore,
 ):
-    without_ignores = toolz.dicttoolz.keyfilter(lambda k: k not in ignore, mapping)
+    without_ignores = keyfilter(lambda k: k not in ignore, mapping)
     # extract the metadata
-    metadata_ = toolz.dicttoolz.itemfilter(
+    metadata_ = itemfilter(
         lambda it: it[0].startswith("@") or is_scalar(it[1]),
         without_ignores,
     )
-    metadata = toolz.dicttoolz.keymap(flip(str.lstrip, "@"), metadata_)
+    metadata = keymap(flip(str.lstrip, "@"), metadata_)
 
     # collapse the selected items
-    to_collapse = toolz.dicttoolz.keyfilter(lambda x: x in collapse, mapping)
-    collapsed = dict(toolz.itertoolz.concat(v.items() for v in to_collapse.values()))
+    to_collapse = keyfilter(lambda x: x in collapse, mapping)
+    collapsed = dict(concat(v.items() for v in to_collapse.values()))
 
     attrs = metadata | collapsed
     return xr.Dataset(attrs=attrs)  # return dataset to avoid bug in datatree
@@ -74,7 +98,7 @@ def extract_variable(obj, dims=()):
     if is_scalar(values):
         dims = ()
 
-    attrs = toolz.dicttoolz.keymap(lambda k: k.lstrip("@"), attributes)
+    attrs = keymap(lambda k: k.lstrip("@"), attributes)
 
     return xr.Variable(dims, values, attrs)
 
@@ -97,18 +121,16 @@ def extract_entry(name, obj, dims=None):
 
 
 def extract_dataset(obj, dims=None):
-    filtered = toolz.dicttoolz.keyfilter(lambda x: x not in ignore, obj)
+    filtered = keyfilter(lambda x: x not in ignore, obj)
     attrs, variables = valsplit(is_scalar, filtered)
     if len(variables) == 1 and is_nested_dataset(first_values(variables)):
         return extract_nested_dataset(first_values(variables), dims=dims).assign_attrs(
             attrs
         )
 
-    filtered_variables = toolz.dicttoolz.valfilter(
-        lambda x: not is_nested_dataset(x), variables
-    )
+    filtered_variables = valfilter(lambda x: not is_nested_dataset(x), variables)
 
-    data_vars = toolz.dicttoolz.itemmap(
+    data_vars = itemmap(
         lambda item: (item[0], extract_entry(*item, dims=dims)),
         filtered_variables,
     )
@@ -119,10 +141,10 @@ def extract_nested_variable(obj, dims=None):
     if is_array(obj):
         return xr.Variable(dims, obj)
 
-    columns = toolz.dicttoolz.merge_with(list, *obj)
+    columns = merge_with(list, *obj)
     attributes, data = keysplit(lambda k: k.startswith("@"), columns)
-    renamed = toolz.dicttoolz.keymap(lambda k: k.lstrip("@"), attributes)
-    attrs = toolz.dicttoolz.valmap(toolz.itertoolz.first, renamed)
+    renamed = keymap(lambda k: k.lstrip("@"), attributes)
+    attrs = valmap(first, renamed)
 
     return xr.Variable(dims, data["$"], attrs)
 
@@ -157,13 +179,13 @@ def to_variable_tuple(name, value, dims):
 
 
 def extract_nested_array(obj, dims=None):
-    columns = toolz.dicttoolz.merge_with(list, *obj)
+    columns = merge_with(list, *obj)
 
     attributes, data = keysplit(flip(str.startswith, "@"), columns)
-    renamed = toolz.dicttoolz.keymap(flip(str.lstrip, "@"), attributes)
-    preprocessed_attrs = toolz.dicttoolz.valmap(np.squeeze, renamed)
+    renamed = keymap(flip(str.lstrip, "@"), attributes)
+    preprocessed_attrs = valmap(np.squeeze, renamed)
     attrs_, indexes = valsplit(is_attr, preprocessed_attrs)
-    preprocessed_data = toolz.dicttoolz.valmap(np.squeeze, data)
+    preprocessed_data = valmap(np.squeeze, data)
 
     if len(indexes) == 1:
         dims = list(indexes)
@@ -172,14 +194,14 @@ def extract_nested_array(obj, dims=None):
     elif dims is None:
         dims = ["$"]
 
-    coords = toolz.dicttoolz.itemmap(
+    coords = itemmap(
         lambda it: (it[0], to_variable_tuple(*it, dims=dims)),
         indexes,
     )
 
     arr = xr.DataArray(
         data=preprocessed_data["$"],
-        attrs=toolz.dicttoolz.valmap(toolz.itertoolz.first, attrs_),
+        attrs=valmap(first, attrs_),
         dims=dims,
         coords=coords,
     )
@@ -191,14 +213,14 @@ def extract_nested_dataset(obj, dims=None):
     if not isinstance(obj, list):
         raise ValueError(f"unknown type: {type(obj)}")
 
-    columns = toolz.dicttoolz.merge_with(list, *obj)
+    columns = merge_with(list, *obj)
 
     attributes, data = keysplit(flip(str.startswith, "@"), columns)
-    renamed = toolz.dicttoolz.keymap(flip(str.lstrip, "@"), attributes)
-    preprocessed = toolz.dicttoolz.valmap(np.squeeze, renamed)
+    renamed = keymap(flip(str.lstrip, "@"), attributes)
+    preprocessed = valmap(np.squeeze, renamed)
     attrs_, indexes = valsplit(is_attr, preprocessed)
 
-    attrs = toolz.dicttoolz.valmap(toolz.itertoolz.first, attrs_)
+    attrs = valmap(first, attrs_)
 
     if dims is None:
         if len(indexes) <= 1:
@@ -206,8 +228,8 @@ def extract_nested_dataset(obj, dims=None):
         else:
             dims = ["stacked"]
 
-    data_vars = toolz.dicttoolz.valmap(curry(extract_nested_variable)(dims=dims), data)
-    coords = toolz.dicttoolz.itemmap(
+    data_vars = valmap(curry(extract_nested_variable)(dims=dims), data)
+    coords = itemmap(
         lambda it: (it[0], to_variable_tuple(*it, dims=dims)),
         indexes,
     )
@@ -221,9 +243,7 @@ def extract_nested_datatree(obj, dims=None):
     if not isinstance(obj, list):
         raise ValueError(f"unknown type: {type(obj)}")
 
-    datasets = toolz.dicttoolz.merge_with(list, *obj)
-    tree = toolz.dicttoolz.valmap(
-        toolz.functoolz.curry(extract_nested_dataset)(dims=dims), datasets
-    )
+    datasets = merge_with(list, *obj)
+    tree = valmap(curry(extract_nested_dataset)(dims=dims), datasets)
 
     return datatree.DataTree.from_dict(tree)

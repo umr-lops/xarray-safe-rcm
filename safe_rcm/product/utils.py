@@ -1,10 +1,13 @@
-import toolz
+try:
+    from cytoolz.functoolz import flip, pipe
+    from cytoolz.itertoolz import groupby
+except ImportError:
+    from toolz.functoolz import flip, pipe
+    from toolz.itertoolz import groupby
 
 
 def split_marked(mapping, marker="@"):
-    groups = toolz.itertoolz.groupby(
-        lambda item: item[0].startswith(marker), mapping.items()
-    )
+    groups = groupby(lambda item: item[0].startswith(marker), mapping.items())
 
     attrs = {key.lstrip(marker): value for key, value in groups.get(True, {})}
     data = {key: value for key, value in groups.get(False, {})}
@@ -27,5 +30,5 @@ def strip_namespaces(name, namespaces):
     trimmed : str
         The string without prefix and without leading colon.
     """
-    funcs = [toolz.functoolz.flip(str.removeprefix, ns) for ns in namespaces]
-    return toolz.functoolz.pipe(name, *funcs).lstrip(":")
+    funcs = [flip(str.removeprefix, ns) for ns in namespaces]
+    return pipe(name, *funcs).lstrip(":")
