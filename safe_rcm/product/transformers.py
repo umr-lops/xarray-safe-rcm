@@ -106,6 +106,8 @@ def extract_variable(obj, dims=()):
 def extract_entry(name, obj, dims=None):
     if dims is None:
         dims = [name]
+    elif isinstance(dims, dict):
+        dims = dims.get(name, [name])
 
     if is_array(obj):
         # dimension coordinate
