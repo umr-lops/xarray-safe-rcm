@@ -103,11 +103,14 @@ def extract_variable(obj, dims=()):
     return xr.Variable(dims, values, attrs)
 
 
-def extract_entry(name, obj, dims=None):
-    if dims is None:
-        dims = [name]
-    elif isinstance(dims, dict):
-        dims = dims.get(name, [name])
+def extract_entry(name, obj, dims=None, default_dims=None):
+    if default_dims is None:
+        default_dims = [name]
+
+    if isinstance(dims, dict):
+        dims = dims.get(name, default_dims)
+    elif dims is None:
+        dims = default_dims
 
     if is_array(obj):
         # dimension coordinate
@@ -122,7 +125,7 @@ def extract_entry(name, obj, dims=None):
         raise ValueError(f"unknown datastructure:\n{obj}")
 
 
-def extract_dataset(obj, dims=None):
+def extract_dataset(obj, dims=None, default_dims=None):
     filtered = keyfilter(lambda x: x not in ignore, obj)
     attrs, variables = valsplit(is_scalar, filtered)
     if len(variables) == 1 and is_nested_dataset(first_values(variables)):
@@ -130,10 +133,15 @@ def extract_dataset(obj, dims=None):
             attrs
         )
 
-    filtered_variables = valfilter(lambda x: not is_nested_dataset(x), variables)
+    variables_ = keymap(lambda k: k.lstrip("@"), variables)
+
+    filtered_variables = valfilter(lambda x: not is_nested_dataset(x), variables_)
 
     data_vars = itemmap(
-        lambda item: (item[0], extract_entry(*item, dims=dims)),
+        lambda item: (
+            item[0],
+            extract_entry(*item, dims=dims, default_dims=default_dims),
+        ),
         filtered_variables,
     )
     return xr.Dataset(data_vars=data_vars, attrs=attrs)
@@ -189,6 +197,8 @@ def extract_nested_array(obj, dims=None):
     attrs_, indexes = valsplit(is_attr, preprocessed_attrs)
     preprocessed_data = valmap(np.squeeze, data)
 
+    originally_stacked = isinstance(dims, (tuple, list)) and "stacked" in dims
+
     if len(indexes) == 1:
         dims = list(indexes)
     elif len(indexes) >= 2:
@@ -207,7 +217,8 @@ def extract_nested_array(obj, dims=None):
         dims=dims,
         coords=coords,
     )
-
+    if originally_stacked:
+        return arr
     return arr.pipe(unstack, dim="stacked")
 
 
