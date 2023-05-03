@@ -246,6 +246,35 @@ def read_product(mapper, product_path):
                 curry(xr.concat, dim="burst_maps"),
             ),
         },
+        "/dopplerRate": {
+            "path": "/dopplerRate",
+            "f": compose_left(
+                curry(
+                    map,
+                    compose_left(
+                        curry(keysplit, lambda k: k != "dopplerRateEstimate"),
+                        juxt(
+                            first,
+                            compose_left(
+                                second,
+                                dictfirst,
+                                curry(starcall, curry(merge_with, list)),
+                            ),
+                        ),
+                        curry(starcall, merge),
+                        curry(
+                            transformers.extract_dataset,
+                            dims={
+                                "dopplerRateCoefficients": ["burst", "coefficients"],
+                            },
+                            default_dims=["burst"],
+                        ),
+                    ),
+                ),
+                list,
+                curry(xr.concat, dim="burst_maps"),
+            ),
+        },
     }
 
     converted = valmap(
