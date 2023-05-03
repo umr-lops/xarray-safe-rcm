@@ -22,8 +22,8 @@ try:
         valfilter,
         valmap,
     )
-    from cytoolz.functoolz import curry, flip
-    from cytoolz.itertoolz import concat, first
+    from cytoolz.functoolz import compose_left, curry, flip
+    from cytoolz.itertoolz import concat, first, second
 except ImportError:
     from toolz.dicttoolz import (
         itemfilter,
@@ -34,8 +34,8 @@ except ImportError:
         valfilter,
         valmap,
     )
-    from toolz.functoolz import curry, flip
-    from toolz.itertoolz import concat, first
+    from toolz.functoolz import compose_left, curry, flip
+    from toolz.itertoolz import concat, first, second
 
 
 ignore = ("@xmlns", "@xmlns:xsi", "@xsi:schemaLocation")
@@ -45,7 +45,7 @@ def convert_composite(value):
     if not is_composite_value(value):
         raise ValueError(f"not a composite: {value}")
 
-    converted = {part["@dataStream"].lower(): part["$"] for part in value}
+    converted = {part["@dataStream"].lower(): np.array(part["$"]) for part in value}
 
     if list(converted) == ["magnitude"]:
         return "magnitude", converted["magnitude"]
@@ -75,10 +75,18 @@ def extract_metadata(
 
 
 def extract_array(obj, dims):
+    if isinstance(dims, str):
+        dims = [dims]
+
     # special case for pulses:
-    if dims == "pulses" and len(obj) == 1 and isinstance(obj[0], str):
+    if "pulses" in dims and len(obj) == 1 and isinstance(obj[0], str):
         obj = obj[0].split()
-    return xr.Variable(dims, obj)
+    elif len(obj) >= 1 and is_composite_value(obj[0]):
+        obj = list(map(compose_left(convert_composite, second), obj))
+    data = np.array(obj)
+    if data.size > 1:
+        data = np.squeeze(data)
+    return xr.Variable(dims, data)
 
 
 def extract_composite(obj, dims=()):
