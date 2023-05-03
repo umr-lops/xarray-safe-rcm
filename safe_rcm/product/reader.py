@@ -3,17 +3,17 @@ import xarray as xr
 
 from ..xml import read_xml
 from . import transformers
-from .dicttoolz import query
+from .dicttoolz import keysplit, query
 from .predicates import disjunction, is_nested_array, is_scalar_valued
 
 try:
-    from cytoolz.dicttoolz import keyfilter, valfilter, valmap
-    from cytoolz.functoolz import compose_left, curry
-    from cytoolz.itertoolz import first
+    from cytoolz.dicttoolz import keyfilter, merge, merge_with, valfilter, valmap
+    from cytoolz.functoolz import compose_left, curry, juxt
+    from cytoolz.itertoolz import first, second
 except ImportError:
-    from toolz.dicttoolz import keyfilter, valfilter, valmap
-    from toolz.functoolz import compose_left, curry
-    from toolz.itertoolz import first
+    from toolz.dicttoolz import keyfilter, merge, merge_with, valfilter, valmap
+    from toolz.functoolz import compose_left, curry, juxt
+    from toolz.itertoolz import first, second
 
 
 @curry
@@ -71,6 +71,59 @@ def read_product(mapper, product_path):
                 curry(transformers.extract_dataset)(dims="timeStamp"),
                 lambda ds: ds.assign_coords(
                     {"timeStamp": ds["timeStamp"].astype("datetime64")}
+                ),
+            ),
+        },
+        "/imageGenerationParameters/generalProcessingInformation": {
+            "path": "/imageGenerationParameters/generalProcessingInformation",
+            "f": transformers.extract_metadata,
+        },
+        "/imageGenerationParameters/sarProcessingInformation": {
+            "path": "/imageGenerationParameters/sarProcessingInformation",
+            "f": compose_left(
+                curry(keyfilter, lambda k: k not in {"azimuthWindow", "rangeWindow"}),
+                transformers.extract_dataset,
+            ),
+        },
+        "/imageGenerationParameters/chirps": {
+            "path": "/imageGenerationParameters/chirp",
+            "f": compose_left(
+                lambda el: merge_with(list, *el),
+                curry(keysplit, lambda k: k != "chirpQuality"),
+                juxt(
+                    first,
+                    compose_left(
+                        second,
+                        lambda x: x["chirpQuality"],
+                        lambda el: merge_with(list, *el),
+                    ),
+                ),
+                lambda x: merge(*x),
+                curry(
+                    transformers.extract_dataset,
+                    dims={
+                        "amplitudeCoefficients": ["stacked", "coefficients"],
+                        "phaseCoefficients": ["stacked", "coefficients"],
+                    },
+                    default_dims=["stacked"],
+                ),
+                lambda obj: obj.set_index({"stacked": ["pole", "pulse"]}),
+                lambda obj: obj.unstack("stacked"),
+            ),
+        },
+        "/imageGenerationParameters/slantRangeToGroundRange": {
+            "path": "/imageGenerationParameters/slantRangeToGroundRange",
+            "f": compose_left(
+                lambda el: merge_with(list, *el),
+                curry(
+                    transformers.extract_dataset,
+                    dims={
+                        "groundToSlantRangeCoefficients": [
+                            "zeroDopplerAzimuthTime",
+                            "coefficients",
+                        ],
+                    },
+                    default_dims=["zeroDopplerAzimuthTime"],
                 ),
             ),
         },

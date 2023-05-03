@@ -64,6 +64,8 @@ def is_array(obj):
         elif is_complex(elem):
             # array of imaginary values
             return True
+        elif all(map(is_scalar, elem)):
+            return True
 
     return False
 
