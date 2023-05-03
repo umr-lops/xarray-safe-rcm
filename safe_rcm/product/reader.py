@@ -5,6 +5,7 @@ from ..xml import read_xml
 from . import transformers
 from .dicttoolz import keysplit, query
 from .predicates import disjunction, is_nested_array, is_scalar_valued
+from .utils import starcall
 
 try:
     from cytoolz.dicttoolz import keyfilter, merge, merge_with, valfilter, valmap
@@ -72,6 +73,28 @@ def read_product(mapper, product_path):
                 lambda ds: ds.assign_coords(
                     {"timeStamp": ds["timeStamp"].astype("datetime64")}
                 ),
+            ),
+        },
+        "/sourceAttributes/rawDataAttributes": {
+            "path": "/sourceAttributes/rawDataAttributes",
+            "f": compose_left(
+                curry(keysplit, lambda k: k != "rawDataAnalysis"),
+                juxt(
+                    compose_left(first, transformers.extract_dataset),
+                    compose_left(
+                        second,
+                        lambda x: x["rawDataAnalysis"],
+                        curry(starcall, curry(merge_with, list)),
+                        curry(
+                            transformers.extract_dataset,
+                            dims={"rawDataHistogram": ["stacked", "histogram"]},
+                            default_dims=["stacked"],
+                        ),
+                        lambda obj: obj.set_index({"stacked": ["pole", "beam"]}),
+                        lambda obj: obj.unstack("stacked"),
+                    ),
+                ),
+                curry(xr.merge),
             ),
         },
         "/imageGenerationParameters/generalProcessingInformation": {

@@ -32,3 +32,7 @@ def strip_namespaces(name, namespaces):
     """
     funcs = [flip(str.removeprefix, ns) for ns in namespaces]
     return pipe(name, *funcs).lstrip(":")
+
+
+def starcall(func, args, **kwargs):
+    return func(*args, **kwargs)
