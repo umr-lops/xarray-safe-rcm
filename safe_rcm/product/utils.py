@@ -1,9 +1,9 @@
 try:
     from cytoolz.functoolz import flip, pipe
-    from cytoolz.itertoolz import groupby
+    from cytoolz.itertoolz import first, groupby
 except ImportError:
     from toolz.functoolz import flip, pipe
-    from toolz.itertoolz import groupby
+    from toolz.itertoolz import first, groupby
 
 
 def split_marked(mapping, marker="@"):
@@ -36,3 +36,7 @@ def strip_namespaces(name, namespaces):
 
 def starcall(func, args, **kwargs):
     return func(*args, **kwargs)
+
+
+def dictfirst(mapping):
+    return first(mapping.values())

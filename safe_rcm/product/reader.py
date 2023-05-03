@@ -5,7 +5,7 @@ from ..xml import read_xml
 from . import transformers
 from .dicttoolz import keysplit, query
 from .predicates import disjunction, is_nested_array, is_scalar_valued
-from .utils import starcall
+from .utils import dictfirst, starcall
 
 try:
     from cytoolz.dicttoolz import keyfilter, merge, merge_with, valfilter, valmap
@@ -83,7 +83,7 @@ def read_product(mapper, product_path):
                     compose_left(first, transformers.extract_dataset),
                     compose_left(
                         second,
-                        lambda x: x["rawDataAnalysis"],
+                        dictfirst,
                         curry(starcall, curry(merge_with, list)),
                         curry(
                             transformers.extract_dataset,
@@ -117,7 +117,7 @@ def read_product(mapper, product_path):
                     first,
                     compose_left(
                         second,
-                        lambda x: x["chirpQuality"],
+                        dictfirst,
                         lambda el: merge_with(list, *el),
                     ),
                 ),
