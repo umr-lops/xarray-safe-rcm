@@ -186,6 +186,34 @@ def read_product(mapper, product_path):
                 transformers.extract_dataset,
             ),
         },
+        "/grdBurstMap": {
+            "path": "/grdBurstMap",
+            "f": compose_left(
+                curry(
+                    map,
+                    compose_left(
+                        curry(keysplit, lambda k: k != "burstAttributes"),
+                        juxt(
+                            first,
+                            compose_left(
+                                second,
+                                dictfirst,
+                                curry(starcall, curry(merge_with, list)),
+                            ),
+                        ),
+                        curry(starcall, merge),
+                        curry(
+                            transformers.extract_dataset,
+                            dims=["stacked"],
+                        ),
+                        lambda obj: obj.set_index({"stacked": ["burst", "beam"]}),
+                        lambda obj: obj.unstack("stacked"),
+                    ),
+                ),
+                list,
+                curry(xr.concat, dim="burst_maps"),
+            ),
+        },
     }
 
     converted = valmap(
