@@ -4,19 +4,14 @@ import posixpath
 import datatree
 import fsspec
 import xarray as xr
+from tlz.dicttoolz import valmap
+from tlz.functoolz import compose_left, curry, juxt
 
 from .calibrations import read_noise_levels
 from .product.reader import read_product
 from .product.transformers import extract_dataset
 from .product.utils import starcall
 from .xml import read_xml
-
-try:
-    from cytoolz.dicttoolz import valmap
-    from cytoolz.functoolz import compose_left, curry, juxt
-except ImportError:
-    from toolz.dicttoolz import valmap
-    from toolz.functoolz import compose_left, curry, juxt
 
 
 @curry

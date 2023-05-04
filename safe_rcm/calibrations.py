@@ -3,21 +3,15 @@ import posixpath
 import datatree
 import numpy as np
 import xarray as xr
+from tlz.dicttoolz import itemmap, merge_with, valfilter, valmap
+from tlz.functoolz import compose_left, curry, flip
+from tlz.itertoolz import first
 
 from safe_rcm.product.reader import execute
 
 from .product.dicttoolz import keysplit
 from .product.transformers import extract_dataset
 from .xml import read_xml
-
-try:
-    from cytoolz.dicttoolz import itemmap, merge_with, valfilter, valmap
-    from cytoolz.functoolz import compose_left, curry, flip
-    from cytoolz.itertoolz import first
-except ImportError:
-    from toolz.dicttoolz import itemmap, merge_with, valfilter, valmap
-    from toolz.functoolz import compose_left, curry, flip
-    from toolz.itertoolz import first
 
 
 def move_attrs_to_coords(ds, names):

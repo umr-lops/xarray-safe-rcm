@@ -1,9 +1,5 @@
-try:
-    from cytoolz.dicttoolz import get_in
-    from cytoolz.itertoolz import first, groupby
-except ImportError:
-    from toolz.dicttoolz import get_in
-    from toolz.itertoolz import first, groupby
+from tlz.dicttoolz import get_in
+from tlz.itertoolz import first, groupby
 
 
 def query(path, mapping):

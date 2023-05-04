@@ -4,12 +4,7 @@ import re
 
 import xmlschema
 from lxml import etree
-
-try:
-    from cytoolz.dicttoolz import keymap
-except ImportError:
-    from toolz.dicttoolz import keymap
-
+from tlz.dicttoolz import keymap
 
 include_re = re.compile(r'\s*<xsd:include schemaLocation="(?P<location>[^"/]+)"\s?/>')
 

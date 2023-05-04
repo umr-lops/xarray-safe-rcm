@@ -1,6 +1,17 @@
 import datatree
 import numpy as np
 import xarray as xr
+from tlz.dicttoolz import (
+    itemfilter,
+    itemmap,
+    keyfilter,
+    keymap,
+    merge_with,
+    valfilter,
+    valmap,
+)
+from tlz.functoolz import compose_left, curry, flip
+from tlz.itertoolz import concat, first, second
 
 from .dicttoolz import first_values, keysplit, valsplit
 from .predicates import (
@@ -11,32 +22,6 @@ from .predicates import (
     is_nested_dataset,
     is_scalar,
 )
-
-try:
-    from cytoolz.dicttoolz import (
-        itemfilter,
-        itemmap,
-        keyfilter,
-        keymap,
-        merge_with,
-        valfilter,
-        valmap,
-    )
-    from cytoolz.functoolz import compose_left, curry, flip
-    from cytoolz.itertoolz import concat, first, second
-except ImportError:
-    from toolz.dicttoolz import (
-        itemfilter,
-        itemmap,
-        keyfilter,
-        keymap,
-        merge_with,
-        valfilter,
-        valmap,
-    )
-    from toolz.functoolz import compose_left, curry, flip
-    from toolz.itertoolz import concat, first, second
-
 
 ignore = ("@xmlns", "@xmlns:xsi", "@xsi:schemaLocation")
 
