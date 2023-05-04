@@ -1,4 +1,6 @@
+import io
 import posixpath
+import re
 
 import xmlschema
 from lxml import etree
@@ -7,6 +9,14 @@ try:
     from cytoolz.dicttoolz import keymap
 except ImportError:
     from toolz.dicttoolz import keymap
+
+
+include_re = re.compile(r'\s*<xsd:include schemaLocation="(?P<location>[^"/]+)"\s?/>')
+
+
+def remove_includes(f):
+    text = f.read().decode()
+    return io.StringIO(include_re.sub("", text))
 
 
 def open_schema(mapper, root, name, *, glob="*.xsd"):
@@ -34,9 +44,8 @@ def open_schema(mapper, root, name, *, glob="*.xsd"):
     urls = sorted(
         fs.glob(f"{schema_root}/{glob}"), key=lambda u: u.endswith(name), reverse=True
     )
-    sources = [fs.open(u) for u in urls]
-
-    return xmlschema.XMLSchema(sources)
+    preprocessed = [remove_includes(fs.open(u)) for u in urls]
+    return xmlschema.XMLSchema(preprocessed)
 
 
 def read_xml(mapper, path):
