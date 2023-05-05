@@ -5,11 +5,13 @@ on:
     types: [created]
 
 jobs:
-  deploy:
+  build:
+    name: Build packages
     runs-on: ubuntu-latest
-    if: github.repository == "xarray-contrib/pint-xarray"
+    if: github.repository == "umr-lops/xarray-safe-rcm"
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -24,6 +26,24 @@ jobs:
       - name: Check the built archives
         run: |
           twine check dist/*
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: packages
+          path: dist/*
+
+  pypi-publish:
+    name: Upload to PyPI
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifacts@v3
+        with:
+          name: packages
+          path: dist/
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@a56da0b891b3dc519c7ee3284aff1fad93cc8598
         with:
