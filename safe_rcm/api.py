@@ -8,10 +8,16 @@ from tlz.dicttoolz import valmap
 from tlz.functoolz import compose_left, curry, juxt
 
 from .calibrations import read_noise_levels
+from .manifest import read_manifest
 from .product.reader import read_product
 from .product.transformers import extract_dataset
 from .product.utils import starcall
 from .xml import read_xml
+
+try:
+    ExceptionGroup
+except NameError:
+    from exceptiongroup import ExceptionGroup
 
 
 @curry
@@ -32,6 +38,22 @@ def open_rcm(url, *, backend_kwargs=None, **dataset_kwargs):
 
     storage_options = backend_kwargs.get("storage_options", {})
     mapper = fsspec.get_mapper(url, **storage_options)
+
+    try:
+        declared_files = read_manifest(mapper, "manifest.safe")
+    except (FileNotFoundError, KeyError):
+        raise ValueError(
+            "cannot find the `manifest.safe` file. Are you sure this is a SAFE dataset?"
+        )
+
+    missing_files = [
+        path for path in declared_files if not mapper.fs.exists(f"{url}/{path}")
+    ]
+    if missing_files:
+        raise ExceptionGroup(
+            "not all files declared in the manifest are available",
+            [ValueError(f"{p} does not exist") for p in missing_files],
+        )
 
     tree = read_product(mapper, "metadata/product.xml")
 
