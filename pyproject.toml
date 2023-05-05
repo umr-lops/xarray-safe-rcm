@@ -2,6 +2,8 @@
 name = "xarray-safe-rcm"
 requires-python = ">= 3.10"
 license = {text = "MIT"}
+description = "xarray reader for radarsat constellation mission (RCM) SAFE files"
+readme = "README.md"
 dependencies = [
     "toolz",
     "numpy",
@@ -17,8 +19,11 @@ dynamic = ["version"]
 requires = ["setuptools>=64.0", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["safe_rcm"]
+[tool.setuptools.packages.find]
+include = [
+    "safe_rcm",
+    "safe_rcm.*",
+]
 
 [tool.setuptools_scm]
 fallback_version = "999"
