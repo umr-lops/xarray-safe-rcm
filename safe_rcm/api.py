@@ -39,7 +39,12 @@ def open_rcm(url, *, backend_kwargs=None, **dataset_kwargs):
     storage_options = backend_kwargs.get("storage_options", {})
     mapper = fsspec.get_mapper(url, **storage_options)
 
-    declared_files = read_manifest(mapper, "manifest.safe")
+    try:
+        declared_files = read_manifest(mapper, "manifest.safe")
+    except (FileNotFoundError, KeyError):
+        raise ValueError(
+            "cannot find the `manifest.safe` file. Are you sure this is a SAFE dataset?"
+        )
 
     missing_files = [
         path for path in declared_files if not mapper.fs.exists(f"{url}/{path}")
