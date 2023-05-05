@@ -1,11 +1,6 @@
 import numpy as np
-
-try:
-    from cytoolz.functoolz import compose, juxt
-    from cytoolz.itertoolz import isiterable
-except ImportError:
-    from toolz.functoolz import compose, juxt
-    from toolz.itertoolz import isiterable
+from tlz.functoolz import compose, juxt
+from tlz.itertoolz import isiterable
 
 
 def disjunction(*predicates):

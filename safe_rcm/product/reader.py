@@ -1,20 +1,14 @@
 import datatree
 import xarray as xr
+from tlz.dicttoolz import keyfilter, merge, merge_with, valfilter, valmap
+from tlz.functoolz import compose_left, curry, juxt
+from tlz.itertoolz import first, second
 
 from ..xml import read_xml
 from . import transformers
 from .dicttoolz import keysplit, query
 from .predicates import disjunction, is_nested_array, is_scalar_valued
 from .utils import dictfirst, starcall
-
-try:
-    from cytoolz.dicttoolz import keyfilter, merge, merge_with, valfilter, valmap
-    from cytoolz.functoolz import compose_left, curry, juxt
-    from cytoolz.itertoolz import first, second
-except ImportError:
-    from toolz.dicttoolz import keyfilter, merge, merge_with, valfilter, valmap
-    from toolz.functoolz import compose_left, curry, juxt
-    from toolz.itertoolz import first, second
 
 
 @curry

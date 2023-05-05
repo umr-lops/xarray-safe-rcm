@@ -1,9 +1,5 @@
-try:
-    from cytoolz.functoolz import flip, pipe
-    from cytoolz.itertoolz import first, groupby
-except ImportError:
-    from toolz.functoolz import flip, pipe
-    from toolz.itertoolz import first, groupby
+from tlz.functoolz import flip, pipe
+from tlz.itertoolz import first, groupby
 
 
 def split_marked(mapping, marker="@"):
