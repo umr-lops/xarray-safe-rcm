@@ -17,8 +17,11 @@ dynamic = ["version"]
 requires = ["setuptools>=64.0", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["safe_rcm"]
+[tool.setuptools.packages.find]
+include = [
+    "safe_rcm",
+    "safe_rcm.*",
+]
 
 [tool.setuptools_scm]
 fallback_version = "999"
