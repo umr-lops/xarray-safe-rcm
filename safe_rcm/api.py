@@ -1,5 +1,6 @@
 import os
 import posixpath
+from fnmatch import fnmatchcase
 
 import datatree
 import fsspec
@@ -27,6 +28,10 @@ def execute(tree, f, path):
     return f(node)
 
 
+def ignored_file(path, ignores):
+    return any(fnmatchcase(posixpath.basename(path), ignore) for ignore in ignores)
+
+
 def open_rcm(url, *, backend_kwargs=None, **dataset_kwargs):
     if not isinstance(url, (str, os.PathLike)):
         raise ValueError(f"cannot deal with object of type {type(url)}: {url}")
@@ -46,8 +51,13 @@ def open_rcm(url, *, backend_kwargs=None, **dataset_kwargs):
             "cannot find the `manifest.safe` file. Are you sure this is a SAFE dataset?"
         )
 
+    default_ignores = ["*.pdf", "*.html", "*.xslt", "*.png", "*.kml", "*.txt"]
+    ignores = backend_kwargs.get("manifest_ignores", default_ignores)
+
     missing_files = [
-        path for path in declared_files if not mapper.fs.exists(f"{url}/{path}")
+        path
+        for path in declared_files
+        if not ignored_file(path, ignores) and not mapper.fs.exists(f"{url}/{path}")
     ]
     if missing_files:
         raise ExceptionGroup(
