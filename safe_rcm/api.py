@@ -29,14 +29,26 @@ def execute(tree, f, path):
 
 
 def ignored_file(path, ignores):
-    return any(fnmatchcase(posixpath.basename(path), ignore) for ignore in ignores)
+    ignored = [
+        fnmatchcase(path, ignore) or fnmatchcase(posixpath.basename(path), ignore)
+        for ignore in ignores
+    ]
+    return any(ignored)
 
 
 def open_rcm(
     url,
     *,
     backend_kwargs=None,
-    manifest_ignores=["*.pdf", "*.html", "*.xslt", "*.png", "*.kml", "*.txt"],
+    manifest_ignores=[
+        "*.pdf",
+        "*.html",
+        "*.xslt",
+        "*.png",
+        "*.kml",
+        "*.txt",
+        "preview/*",
+    ],
     **dataset_kwargs,
 ):
     """read SAFE files of the radarsat constellation mission (RCM)
@@ -73,7 +85,7 @@ def open_rcm(
         path
         for path in declared_files
         if not ignored_file(path, manifest_ignores)
-        and not mapper.fs.exists(f"{url}/{path}")
+        and not mapper.fs.exists(mapper._key_to_str(path))
     ]
     if missing_files:
         raise ExceptionGroup(
