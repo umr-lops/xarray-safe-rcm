@@ -1,5 +1,6 @@
 import os
 import posixpath
+from fnmatch import fnmatchcase
 
 import datatree
 import fsspec
@@ -27,7 +28,29 @@ def execute(tree, f, path):
     return f(node)
 
 
-def open_rcm(url, *, backend_kwargs=None, **dataset_kwargs):
+def ignored_file(path, ignores):
+    return any(fnmatchcase(posixpath.basename(path), ignore) for ignore in ignores)
+
+
+def open_rcm(
+    url,
+    *,
+    backend_kwargs=None,
+    manifest_ignores=["*.pdf", "*.html", "*.xslt", "*.png", "*.kml", "*.txt"],
+    **dataset_kwargs,
+):
+    """read SAFE files of the radarsat constellation mission (RCM)
+
+    Parameters
+    ----------
+    url : str
+    backend_kwargs : mapping
+    manifest_ignores : list of str, default: ["*.pdf", "*.html", "*.xslt", "*.png", "*.kml", "*.txt"]
+        Globs that match files from the manifest that are allowed to be missing.
+    **dataset_kwargs
+        Keyword arguments forwarded to `xr.open_dataset`, used to open
+        the contained data files.
+    """
     if not isinstance(url, (str, os.PathLike)):
         raise ValueError(f"cannot deal with object of type {type(url)}: {url}")
 
@@ -47,7 +70,10 @@ def open_rcm(url, *, backend_kwargs=None, **dataset_kwargs):
         )
 
     missing_files = [
-        path for path in declared_files if not mapper.fs.exists(f"{url}/{path}")
+        path
+        for path in declared_files
+        if not ignored_file(path, manifest_ignores)
+        and not mapper.fs.exists(f"{url}/{path}")
     ]
     if missing_files:
         raise ExceptionGroup(
