@@ -57,7 +57,8 @@ def open_rcm(
     ----------
     url : str
     backend_kwargs : mapping
-    manifest_ignores : list of str, default: ["*.pdf", "*.html", "*.xslt", "*.png", "*.kml", "*.txt"]
+    manifest_ignores : list of str, default: ["*.pdf", "*.html", "*.xslt", "*.png", \
+                                              "*.kml", "*.txt", "preview/*"]
         Globs that match files from the manifest that are allowed to be missing.
     **dataset_kwargs
         Keyword arguments forwarded to `xr.open_dataset`, used to open
