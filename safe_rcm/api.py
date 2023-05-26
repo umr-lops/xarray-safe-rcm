@@ -74,6 +74,7 @@ def open_rcm(
 
     storage_options = backend_kwargs.get("storage_options", {})
     mapper = fsspec.get_mapper(url, **storage_options)
+    relative_fs = fsspec.implementations.dirfs.DirFileSystem(fo=url, fs=mapper.fs)
 
     try:
         declared_files = read_manifest(mapper, "manifest.safe")
@@ -85,8 +86,7 @@ def open_rcm(
     missing_files = [
         path
         for path in declared_files
-        if not ignored_file(path, manifest_ignores)
-        and not mapper.fs.exists(mapper._key_to_str(path))
+        if not ignored_file(path, manifest_ignores) and not relative_fs.exists(path)
     ]
     if missing_files:
         raise ExceptionGroup(
@@ -147,16 +147,12 @@ def open_rcm(
         ),
         imagery_paths,
     )
-    imagery_urls = valmap(
-        mapper._key_to_str,
-        resolved,
-    )
     imagery_dss = valmap(
         compose_left(
-            curry(mapper.fs.open),
+            curry(relative_fs.open),
             curry(xr.open_dataset, engine="rasterio", **dataset_kwargs),
         ),
-        imagery_urls,
+        resolved,
     )
     dss = [ds.assign_coords(pole=coord) for coord, ds in imagery_dss.items()]
     imagery = xr.concat(dss, dim="pole")
