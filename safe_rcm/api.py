@@ -5,6 +5,7 @@ from fnmatch import fnmatchcase
 import datatree
 import fsspec
 import xarray as xr
+from fsspec.implementations.dirfs import DirFileSystem
 from tlz.dicttoolz import valmap
 from tlz.functoolz import compose_left, curry, juxt
 
@@ -74,7 +75,7 @@ def open_rcm(
 
     storage_options = backend_kwargs.get("storage_options", {})
     mapper = fsspec.get_mapper(url, **storage_options)
-    relative_fs = fsspec.implementations.dirfs.DirFileSystem(fo=url, fs=mapper.fs)
+    relative_fs = DirFileSystem(path=url, fs=mapper.fs)
 
     try:
         declared_files = read_manifest(mapper, "manifest.safe")
