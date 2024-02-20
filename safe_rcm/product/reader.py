@@ -125,6 +125,7 @@ def read_product(mapper, product_path):
                     default_dims=["stacked"],
                 ),
                 lambda obj: obj.set_index({"stacked": ["pole", "pulse"]}),
+                lambda obj: obj.drop_duplicates("stacked", keep="last"),
                 lambda obj: obj.unstack("stacked"),
             ),
         },
