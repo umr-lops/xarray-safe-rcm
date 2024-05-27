@@ -1,8 +1,7 @@
-from importlib.metadata import version
-
 from .api import open_rcm  # noqa: F401
 
 try:
-    __version__ = version("safe_rcm")
-except Exception:
-    __version__ = "999"
+    from importlib import metadata
+except ImportError: # for Python<3.8
+    import importlib_metadata as metadata
+__version__ = metadata.version('xarray-safe-rcm')
