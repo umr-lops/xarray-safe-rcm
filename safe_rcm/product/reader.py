@@ -4,11 +4,11 @@ from tlz.dicttoolz import keyfilter, merge, merge_with, valfilter, valmap
 from tlz.functoolz import compose_left, curry, juxt
 from tlz.itertoolz import first, second
 
-from ..xml import read_xml
-from . import transformers
-from .dicttoolz import keysplit, query
-from .predicates import disjunction, is_nested_array, is_scalar_valued
-from .utils import dictfirst, starcall
+from safe_rcm.product import transformers
+from safe_rcm.product.dicttoolz import keysplit, query
+from safe_rcm.product.predicates import disjunction, is_nested_array, is_scalar_valued
+from safe_rcm.product.utils import dictfirst, starcall
+from safe_rcm.xml import read_xml
 
 
 @curry
