@@ -40,3 +40,7 @@ repos:
         args: [--option, array_auto_collapse=false]
       - id: taplo-lint
         args: [--no-schema]
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.20.2
+    hooks:
+      - id: validate-pyproject
