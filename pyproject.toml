@@ -59,7 +59,7 @@ fixable = ["I", "TID252", "UP"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["safe_rcm"]
-known-third-party = ["xarray", "toolz"]
+known-third-party = ["xarray", "tlz"]
 
 [tool.ruff.lint.flake8-tidy-imports]
 # Disallow all relative imports.
