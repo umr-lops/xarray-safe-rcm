@@ -7,11 +7,10 @@ from tlz.dicttoolz import itemmap, merge_with, valfilter, valmap
 from tlz.functoolz import compose_left, curry, flip
 from tlz.itertoolz import first
 
+from safe_rcm.product.dicttoolz import keysplit
 from safe_rcm.product.reader import execute
-
-from .product.dicttoolz import keysplit
-from .product.transformers import extract_dataset
-from .xml import read_xml
+from safe_rcm.product.transformers import extract_dataset
+from safe_rcm.xml import read_xml
 
 
 def move_attrs_to_coords(ds, names):

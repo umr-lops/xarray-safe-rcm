@@ -2,8 +2,8 @@ from tlz import filter
 from tlz.functoolz import compose_left, curry
 from tlz.itertoolz import concat, get
 
-from .product.dicttoolz import query
-from .xml import read_xml
+from safe_rcm.product.dicttoolz import query
+from safe_rcm.xml import read_xml
 
 
 def merge_location(loc):
