@@ -13,8 +13,8 @@ from tlz.dicttoolz import (
 from tlz.functoolz import compose_left, curry, flip
 from tlz.itertoolz import concat, first, second
 
-from .dicttoolz import first_values, keysplit, valsplit
-from .predicates import (
+from safe_rcm.product.dicttoolz import first_values, keysplit, valsplit
+from safe_rcm.product.predicates import (
     is_array,
     is_attr,
     is_composite_value,
