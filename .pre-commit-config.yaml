@@ -37,5 +37,6 @@ repos:
     rev: v0.9.3
     hooks:
       - id: taplo-format
+        args: [--option, array_auto_collapse=false]
       - id: taplo-lint
         args: [--no-schema]
