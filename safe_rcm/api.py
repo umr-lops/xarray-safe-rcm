@@ -9,12 +9,12 @@ from fsspec.implementations.dirfs import DirFileSystem
 from tlz.dicttoolz import valmap
 from tlz.functoolz import compose_left, curry, juxt
 
-from .calibrations import read_noise_levels
-from .manifest import read_manifest
-from .product.reader import read_product
-from .product.transformers import extract_dataset
-from .product.utils import starcall
-from .xml import read_xml
+from safe_rcm.calibrations import read_noise_levels
+from safe_rcm.manifest import read_manifest
+from safe_rcm.product.reader import read_product
+from safe_rcm.product.transformers import extract_dataset
+from safe_rcm.product.utils import starcall
+from safe_rcm.xml import read_xml
 
 try:
     ExceptionGroup
