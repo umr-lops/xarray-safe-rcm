@@ -127,6 +127,7 @@ def open_rcm(
                 lambda arr: arr.set_index({"stacked": ["sarCalibrationType", "pole"]}),
                 lambda arr: arr.unstack("stacked"),
                 lambda arr: arr.rename("lookup_tables"),
+                lambda arr: arr.to_dataset(),
             ),
         },
         "/noiseLevels": {
