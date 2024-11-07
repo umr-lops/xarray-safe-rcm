@@ -23,7 +23,7 @@ schemas = [
         """
         <?xml version="1.0" encoding="UTF-8"?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-            <xsd:include schemaLocation="schema2.xsd"/>
+          <xsd:include schemaLocation="schema2.xsd"/>
         </xsd:schema>
         """
     ),
@@ -31,12 +31,15 @@ schemas = [
         """
         <?xml version="1.0" encoding="UTF-8"?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-            <xsd:include schemaLocation="schema1.xsd"/>
-            <xsd:include schemaLocation="schema2.xsd"/>
+          <xsd:include schemaLocation="schema1.xsd"/>
+          <xsd:include schemaLocation="schema2.xsd"/>
         </xsd:schema>
         """
     ),
 ]
+
+
+Container = collections.namedtuple("SchemaSetup", ["mapper", "root_schema", "expected"])
 
 
 @pytest.fixture(params=enumerate(schemas))
@@ -49,7 +52,8 @@ def schema_setup(request):
         """
         <?xml version="1.0" encoding="UTF-8"?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-            <xsd:include schemaLocation="schema3.xsd"/>
+          <xsd:include schemaLocation="schema3.xsd"/>
+          <xsd:element name="manifest" type="manifest"/>
         </xsd:schema>
         """
     ).encode()
@@ -57,7 +61,8 @@ def schema_setup(request):
         """
         <?xml version="1.0" encoding="UTF-8"?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-            <xsd:include schemaLocation="schema3.xsd"/>
+          <xsd:include schemaLocation="schema4.xsd"/>
+          <xsd:element name="count" type="count"/>
         </xsd:schema>
         """
     ).encode()
@@ -65,25 +70,50 @@ def schema_setup(request):
         """
         <?xml version="1.0" encoding="UTF-8"?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+          <xsd:include schemaLocation="schema3.xsd"/>
+          <xsd:complexType name="manifest">
+            <xsd:sequence>
+              <xsd:element name="quantity_a" type="count"/>
+              <xsd:element name="quantity_b" type="count"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:schema>
+        """
+    ).encode()
+    mapper["schemas/schema4.xsd"] = dedent(
+        """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+          <xsd:simpleType name="count">
+            <xsd:restriction base="xsd:integer">
+              <xsd:minInclusive value="0"/>
+              <xsd:maxInclusive value="10"/>
+            </xsd:restriction>
+          </xsd:simpleType>
         </xsd:schema>
         """
     ).encode()
 
+    return schema_index, mapper
+
+
+@pytest.fixture
+def schema_paths_setup(schema_setup):
+    schema_index, mapper = schema_setup
+
     expected = [
         ["schemas/root.xsd"],
-        ["schemas/root.xsd", "schemas/schema2.xsd", "schemas/schema3.xsd"],
+        ["schemas/root.xsd", "schemas/schema2.xsd", "schemas/schema4.xsd"],
         [
             "schemas/root.xsd",
             "schemas/schema1.xsd",
             "schemas/schema2.xsd",
             "schemas/schema3.xsd",
+            "schemas/schema4.xsd",
         ],
     ]
 
-    schema_setup = collections.namedtuple(
-        "SchemaSetup", ["mapper", "root_schema", "expected"]
-    )
-    return schema_setup(mapper, "schemas/root.xsd", expected[schema_index])
+    return Container(mapper, "schemas/root.xsd", expected[schema_index])
 
 
 def test_remove_includes():
@@ -121,9 +151,9 @@ def test_normalize(root, path, expected):
     assert actual == expected
 
 
-def test_schema_paths(schema_setup):
-    actual = xml.schema_paths(schema_setup.mapper, schema_setup.root_schema)
+def test_schema_paths(schema_paths_setup):
+    actual = xml.schema_paths(schema_paths_setup.mapper, schema_paths_setup.root_schema)
 
-    expected = schema_setup.expected
+    expected = schema_paths_setup.expected
 
     assert actual == expected
