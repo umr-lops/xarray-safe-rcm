@@ -30,7 +30,8 @@ def schema_paths(mapper, root_schema):
     visited = []
     while unvisited:
         path = unvisited.popleft()
-        visited.append(path)
+        if path not in visited:
+            visited.append(path)
 
         text = mapper[path].decode()
         includes = extract_includes(text)
