@@ -40,6 +40,9 @@ schemas = [
 
 
 Container = collections.namedtuple("SchemaSetup", ["mapper", "root_schema", "expected"])
+SchemaProperties = collections.namedtuple(
+    "SchemaProperties", ["root_elements", "simple_types", "complex_types"]
+)
 
 
 @pytest.fixture(params=enumerate(schemas))
@@ -116,6 +119,54 @@ def schema_paths_setup(schema_setup):
     return Container(mapper, "schemas/root.xsd", expected[schema_index])
 
 
+@pytest.fixture
+def schema_content_setup(schema_setup):
+    schema_index, mapper = schema_setup
+
+    count_type = {"name": "count", "type": "simple", "base_type": "integer"}
+    manifest_type = {"name": "manifest", "type": "complex"}
+
+    manifest_element = {"name": "manifest", "type": manifest_type}
+    count_element = {"name": "count", "type": count_type}
+    expected = [
+        SchemaProperties([], [], []),
+        SchemaProperties([count_element], [count_type], []),
+        SchemaProperties(
+            [manifest_element, count_element], [count_type], [manifest_type]
+        ),
+    ]
+
+    return Container(mapper, "schemas/root.xsd", expected[schema_index])
+
+
+def convert_type(t):
+    def strip_namespace(name):
+        return name.split("}", maxsplit=1)[1]
+
+    if hasattr(t, "content"):
+        # complex type
+        return {"name": t.name, "type": "complex"}
+    elif hasattr(t, "base_type"):
+        # simple type, only restriction
+        return {
+            "name": t.name,
+            "base_type": strip_namespace(t.base_type.name),
+            "type": "simple",
+        }
+
+
+def convert_element(el):
+    return {"name": el.name, "type": convert_type(el.type)}
+
+
+def extract_schema_properties(schema):
+    return SchemaProperties(
+        [convert_element(v) for v in schema.root_elements],
+        [convert_type(v) for v in schema.simple_types],
+        [convert_type(v) for v in schema.complex_types],
+    )
+
+
 def test_remove_includes():
     expected = schemas[0]
     actual = xml.remove_includes(schemas[1])
@@ -157,3 +208,11 @@ def test_schema_paths(schema_paths_setup):
     expected = schema_paths_setup.expected
 
     assert actual == expected
+
+
+def test_open_schemas(schema_content_setup):
+    container = schema_content_setup
+    actual = xml.open_schema(container.mapper, container.root_schema)
+    expected = container.expected
+
+    assert extract_schema_properties(actual) == expected
