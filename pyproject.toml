@@ -8,7 +8,6 @@ dependencies = [
   "toolz",
   "numpy",
   "xarray",
-  "xarray-datatree",
   "lxml",
   "xmlschema",
   "rioxarray",
