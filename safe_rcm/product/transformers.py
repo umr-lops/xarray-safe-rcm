@@ -1,4 +1,3 @@
-import datatree
 import numpy as np
 import xarray as xr
 from tlz.dicttoolz import (
@@ -252,4 +251,4 @@ def extract_nested_datatree(obj, dims=None):
     datasets = merge_with(list, *obj)
     tree = valmap(curry(extract_nested_dataset)(dims=dims), datasets)
 
-    return datatree.DataTree.from_dict(tree)
+    return xr.DataTree.from_dict(tree)

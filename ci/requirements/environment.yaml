@@ -23,7 +23,6 @@ dependencies:
   - scipy
   # data
   - xarray
-  - xarray-datatree
   - dask
   - numpy
   - pandas
