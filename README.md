@@ -1,6 +1,6 @@
 # xarray-safe-rcm
 
-Read RCM SAFE files into `datatree` objects.
+Read RCM SAFE files into `xarray.DataTree` objects.
 
 ## Usage
 

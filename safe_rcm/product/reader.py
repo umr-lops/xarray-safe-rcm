@@ -1,4 +1,3 @@
-import datatree
 import xarray as xr
 from tlz.dicttoolz import keyfilter, merge, merge_with, valfilter, valmap
 from tlz.functoolz import compose_left, curry, juxt
@@ -276,4 +275,4 @@ def read_product(mapper, product_path):
         lambda x: execute(**x)(decoded),
         layout,
     )
-    return datatree.DataTree.from_dict(converted)
+    return xr.DataTree.from_dict(converted)
