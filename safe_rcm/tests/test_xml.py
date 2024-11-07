@@ -39,7 +39,7 @@ schemas = [
 ]
 
 
-Container = collections.namedtuple("SchemaSetup", ["mapper", "root_schema", "expected"])
+Container = collections.namedtuple("SchemaSetup", ["mapper", "path", "expected"])
 SchemaProperties = collections.namedtuple(
     "SchemaProperties", ["root_elements", "simple_types", "complex_types"]
 )
@@ -139,6 +139,79 @@ def schema_content_setup(schema_setup):
     return Container(mapper, "schemas/root.xsd", expected[schema_index])
 
 
+@pytest.fixture(params=["data.xml", "data/file.xml"])
+def data_file_setup(request):
+    path = request.param
+    mapper = fsspec.get_mapper("memory")
+
+    mapper["schemas/root.xsd"] = dedent(
+        """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+          <xsd:include schemaLocation="schema1.xsd"/>
+          <xsd:include schemaLocation="schema2.xsd"/>
+          <xsd:complexType name="elements">
+            <xsd:sequence>
+              <xsd:element name="summary" type="manifest"/>
+              <xsd:element name="count" type="count"/>
+            </xsd:sequence>
+          </xsd:complexType>
+          <xsd:element name="elements" type="elements"/>
+        </xsd:schema>
+        """
+    ).encode()
+    mapper["schemas/schema1.xsd"] = dedent(
+        """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+          <xsd:include schemaLocation="schema2.xsd"/>
+          <xsd:complexType name="manifest">
+            <xsd:sequence>
+              <xsd:element name="quantity_a" type="count"/>
+              <xsd:element name="quantity_b" type="count"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:schema>
+        """
+    ).encode()
+    mapper["schemas/schema2.xsd"] = dedent(
+        """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+          <xsd:simpleType name="count">
+            <xsd:restriction base="xsd:integer">
+              <xsd:minInclusive value="0"/>
+              <xsd:maxInclusive value="10"/>
+            </xsd:restriction>
+          </xsd:simpleType>
+        </xsd:schema>
+        """
+    ).encode()
+
+    schema_path = "schemas/root.xsd" if "/" not in path else "../schemas/root.xsd"
+    mapper[path] = dedent(
+        f"""
+        <?xml version="1.0" encoding="UTF-8"?>
+        <elements xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="schema {schema_path}">
+          <summary>
+            <quantity_a>1</quantity_a>
+            <quantity_b>2</quantity_b>
+          </summary>
+          <count>3</count>
+        </elements>
+        """
+    ).encode()
+
+    expected = {
+        "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+        "@xsi:schemaLocation": f"schema {schema_path}",
+        "summary": {"quantity_a": 1, "quantity_b": 2},
+        "count": 3,
+    }
+
+    return Container(mapper, path, expected)
+
+
 def convert_type(t):
     def strip_namespace(name):
         return name.split("}", maxsplit=1)[1]
@@ -203,7 +276,7 @@ def test_normalize(root, path, expected):
 
 
 def test_schema_paths(schema_paths_setup):
-    actual = xml.schema_paths(schema_paths_setup.mapper, schema_paths_setup.root_schema)
+    actual = xml.schema_paths(schema_paths_setup.mapper, schema_paths_setup.path)
 
     expected = schema_paths_setup.expected
 
@@ -212,7 +285,15 @@ def test_schema_paths(schema_paths_setup):
 
 def test_open_schemas(schema_content_setup):
     container = schema_content_setup
-    actual = xml.open_schema(container.mapper, container.root_schema)
+    actual = xml.open_schema(container.mapper, container.path)
     expected = container.expected
 
     assert extract_schema_properties(actual) == expected
+
+
+def test_read_xml(data_file_setup):
+    container = data_file_setup
+
+    actual = xml.read_xml(container.mapper, container.path)
+
+    assert actual == container.expected
