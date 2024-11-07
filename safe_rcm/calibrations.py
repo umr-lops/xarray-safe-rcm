@@ -1,6 +1,5 @@
 import posixpath
 
-import datatree
 import numpy as np
 import xarray as xr
 from tlz.dicttoolz import itemmap, merge_with, valfilter, valmap
@@ -109,4 +108,4 @@ def read_noise_levels(mapper, root, fnames):
         merged,
     )
 
-    return datatree.DataTree.from_dict(combined)
+    return xr.DataTree.from_dict(combined)

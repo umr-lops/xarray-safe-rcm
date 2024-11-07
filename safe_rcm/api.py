@@ -2,7 +2,6 @@ import os
 import posixpath
 from fnmatch import fnmatchcase
 
-import datatree
 import fsspec
 import xarray as xr
 from fsspec.implementations.dirfs import DirFileSystem
@@ -160,7 +159,7 @@ def open_rcm(
 
     return tree.assign(
         {
-            "lookupTables": datatree.DataTree.from_dict(calibration),
-            "imagery": datatree.DataTree(imagery),
+            "lookupTables": xr.DataTree.from_dict(calibration),
+            "imagery": xr.DataTree(imagery),
         }
     )
