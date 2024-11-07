@@ -11,7 +11,7 @@ include_re = re.compile(r'\s*<xsd:include schemaLocation="(?P<location>[^"/]+)"\
 
 
 def remove_includes(text):
-    return io.StringIO(include_re.sub("", text))
+    return include_re.sub("", text)
 
 
 def extract_includes(text):
@@ -30,7 +30,8 @@ def schema_paths(mapper, root_schema):
     visited = []
     while unvisited:
         path = unvisited.popleft()
-        visited.append(path)
+        if path not in visited:
+            visited.append(path)
 
         text = mapper[path].decode()
         includes = extract_includes(text)
@@ -63,7 +64,7 @@ def open_schema(mapper, schema):
         The opened schema object
     """
     paths = schema_paths(mapper, schema)
-    preprocessed = [remove_includes(mapper[p].decode()) for p in paths]
+    preprocessed = [io.StringIO(remove_includes(mapper[p].decode())) for p in paths]
 
     return xmlschema.XMLSchema(preprocessed)
 
