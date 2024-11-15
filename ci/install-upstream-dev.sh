@@ -19,7 +19,7 @@ python -m pip install \
 python -m pip install --upgrade \
   git+https://github.com/pytoolz/toolz \
   git+https://github.com/lxml/lxml \
-  https://github.com/sissaschool/xmlschema \
+  git+https://github.com/sissaschool/xmlschema \
   git+https://github.com/fsspec/filesystem_spec \
   git+https://github.com/dateutil/dateutil \
-  https://github.com/corteva/rioxarray
+  git+https://github.com/corteva/rioxarray
