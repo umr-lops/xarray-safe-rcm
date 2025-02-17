@@ -30,7 +30,7 @@ repos:
       - id: nbstripout
         args: [--extra-keys=metadata.kernelspec metadata.language_info.version]
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.5.0
+    rev: v3.5.1
     hooks:
       - id: prettier
         args: [--cache-location=.prettier_cache]
