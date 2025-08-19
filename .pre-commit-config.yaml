@@ -4,13 +4,13 @@ ci:
 # https://pre-commit.com/
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-docstring-first
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.5
+    rev: v0.12.9
     hooks:
       - id: ruff
         args: [--fix]
