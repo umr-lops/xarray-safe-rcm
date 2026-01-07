@@ -1,4 +1,5 @@
 import xarray as xr
+import pandas as pd
 from tlz.dicttoolz import keyfilter, merge, merge_with, valfilter, valmap
 from tlz.functoolz import compose_left, curry, juxt
 from tlz.itertoolz import first, second
@@ -55,7 +56,7 @@ def read_product(mapper, product_path):
             "f": compose_left(
                 curry(transformers.extract_dataset)(dims="timeStamp"),
                 lambda ds: ds.assign_coords(
-                    {"timeStamp": ds["timeStamp"].astype("datetime64")}
+                    {"timeStamp": pd.to_datetime(ds["timeStamp"].values).as_unit("ns")}
                 ),
             ),
         },
@@ -64,7 +65,7 @@ def read_product(mapper, product_path):
             "f": compose_left(
                 curry(transformers.extract_dataset)(dims="timeStamp"),
                 lambda ds: ds.assign_coords(
-                    {"timeStamp": ds["timeStamp"].astype("datetime64")}
+                    {"timeStamp": pd.to_datetime(ds["timeStamp"].values).as_unit("ns")}
                 ),
             ),
         },
@@ -80,10 +81,12 @@ def read_product(mapper, product_path):
                         curry(starcall, curry(merge_with, list)),
                         curry(
                             transformers.extract_dataset,
-                            dims={"rawDataHistogram": ["stacked", "histogram"]},
+                            dims={"rawDataHistogram": [
+                                "stacked", "histogram"]},
                             default_dims=["stacked"],
                         ),
-                        lambda obj: obj.set_index({"stacked": ["pole", "beam"]}),
+                        lambda obj: obj.set_index(
+                            {"stacked": ["pole", "beam"]}),
                         lambda obj: obj.unstack("stacked"),
                     ),
                 ),
@@ -97,7 +100,8 @@ def read_product(mapper, product_path):
         "/imageGenerationParameters/sarProcessingInformation": {
             "path": "/imageGenerationParameters/sarProcessingInformation",
             "f": compose_left(
-                curry(keyfilter, lambda k: k not in {"azimuthWindow", "rangeWindow"}),
+                curry(keyfilter, lambda k: k not in {
+                      "azimuthWindow", "rangeWindow"}),
                 transformers.extract_dataset,
             ),
         },
@@ -147,7 +151,8 @@ def read_product(mapper, product_path):
         "/imageReferenceAttributes": {
             "path": "/imageReferenceAttributes",
             "f": compose_left(
-                curry(valfilter)(disjunction(is_scalar_valued, is_nested_array)),
+                curry(valfilter)(disjunction(
+                    is_scalar_valued, is_nested_array)),
                 transformers.extract_dataset,
             ),
         },
@@ -200,7 +205,8 @@ def read_product(mapper, product_path):
                             transformers.extract_dataset,
                             dims=["stacked"],
                         ),
-                        lambda obj: obj.set_index({"stacked": ["burst", "beam"]}),
+                        lambda obj: obj.set_index(
+                            {"stacked": ["burst", "beam"]}),
                         lambda obj: obj.unstack("stacked"),
                     ),
                 ),
@@ -214,7 +220,8 @@ def read_product(mapper, product_path):
                 curry(
                     map,
                     compose_left(
-                        curry(keysplit, lambda k: k != "dopplerCentroidEstimate"),
+                        curry(keysplit, lambda k: k !=
+                              "dopplerCentroidEstimate"),
                         juxt(
                             first,
                             compose_left(
