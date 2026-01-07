@@ -1,3 +1,4 @@
+import pandas as pd
 import xarray as xr
 from tlz.dicttoolz import keyfilter, merge, merge_with, valfilter, valmap
 from tlz.functoolz import compose_left, curry, juxt
@@ -55,7 +56,7 @@ def read_product(mapper, product_path):
             "f": compose_left(
                 curry(transformers.extract_dataset)(dims="timeStamp"),
                 lambda ds: ds.assign_coords(
-                    {"timeStamp": ds["timeStamp"].astype("datetime64")}
+                    {"timeStamp": pd.to_datetime(ds["timeStamp"].values).as_unit("ns")}
                 ),
             ),
         },
@@ -64,7 +65,7 @@ def read_product(mapper, product_path):
             "f": compose_left(
                 curry(transformers.extract_dataset)(dims="timeStamp"),
                 lambda ds: ds.assign_coords(
-                    {"timeStamp": ds["timeStamp"].astype("datetime64")}
+                    {"timeStamp": pd.to_datetime(ds["timeStamp"].values).as_unit("ns")}
                 ),
             ),
         },
