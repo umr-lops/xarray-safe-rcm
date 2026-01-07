@@ -12,6 +12,7 @@ dependencies = [
   "xmlschema",
   "rioxarray",
   "fsspec",
+  "pandas",
   "exceptiongroup; python_version < '3.11'",
 ]
 dynamic = ["version"]
