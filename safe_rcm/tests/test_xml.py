@@ -12,30 +12,24 @@ def dedent(text):
 
 
 schemas = [
-    dedent(
-        """
+    dedent("""
         <?xml version="1.0" encoding="UTF-8"?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
         </xsd:schema>
-        """
-    ),
-    dedent(
-        """
+        """),
+    dedent("""
         <?xml version="1.0" encoding="UTF-8"?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:include schemaLocation="schema2.xsd"/>
         </xsd:schema>
-        """
-    ),
-    dedent(
-        """
+        """),
+    dedent("""
         <?xml version="1.0" encoding="UTF-8"?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:include schemaLocation="schema1.xsd"/>
           <xsd:include schemaLocation="schema2.xsd"/>
         </xsd:schema>
-        """
-    ),
+        """),
 ]
 
 
@@ -51,26 +45,21 @@ def schema_setup(request):
 
     mapper = fsspec.get_mapper("memory")
     mapper["schemas/root.xsd"] = schema.encode()
-    mapper["schemas/schema1.xsd"] = dedent(
-        """
+    mapper["schemas/schema1.xsd"] = dedent("""
         <?xml version="1.0" encoding="UTF-8"?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:include schemaLocation="schema3.xsd"/>
           <xsd:element name="manifest" type="manifest"/>
         </xsd:schema>
-        """
-    ).encode()
-    mapper["schemas/schema2.xsd"] = dedent(
-        """
+        """).encode()
+    mapper["schemas/schema2.xsd"] = dedent("""
         <?xml version="1.0" encoding="UTF-8"?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:include schemaLocation="schema4.xsd"/>
           <xsd:element name="count" type="count"/>
         </xsd:schema>
-        """
-    ).encode()
-    mapper["schemas/schema3.xsd"] = dedent(
-        """
+        """).encode()
+    mapper["schemas/schema3.xsd"] = dedent("""
         <?xml version="1.0" encoding="UTF-8"?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:include schemaLocation="schema3.xsd"/>
@@ -81,10 +70,8 @@ def schema_setup(request):
             </xsd:sequence>
           </xsd:complexType>
         </xsd:schema>
-        """
-    ).encode()
-    mapper["schemas/schema4.xsd"] = dedent(
-        """
+        """).encode()
+    mapper["schemas/schema4.xsd"] = dedent("""
         <?xml version="1.0" encoding="UTF-8"?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:simpleType name="count">
@@ -94,8 +81,7 @@ def schema_setup(request):
             </xsd:restriction>
           </xsd:simpleType>
         </xsd:schema>
-        """
-    ).encode()
+        """).encode()
 
     return schema_index, mapper
 
@@ -144,8 +130,7 @@ def data_file_setup(request):
     path = request.param
     mapper = fsspec.get_mapper("memory")
 
-    mapper["schemas/root.xsd"] = dedent(
-        """
+    mapper["schemas/root.xsd"] = dedent("""
         <?xml version="1.0" encoding="UTF-8"?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:include schemaLocation="schema1.xsd"/>
@@ -158,10 +143,8 @@ def data_file_setup(request):
           </xsd:complexType>
           <xsd:element name="elements" type="elements"/>
         </xsd:schema>
-        """
-    ).encode()
-    mapper["schemas/schema1.xsd"] = dedent(
-        """
+        """).encode()
+    mapper["schemas/schema1.xsd"] = dedent("""
         <?xml version="1.0" encoding="UTF-8"?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:include schemaLocation="schema2.xsd"/>
@@ -172,10 +155,8 @@ def data_file_setup(request):
             </xsd:sequence>
           </xsd:complexType>
         </xsd:schema>
-        """
-    ).encode()
-    mapper["schemas/schema2.xsd"] = dedent(
-        """
+        """).encode()
+    mapper["schemas/schema2.xsd"] = dedent("""
         <?xml version="1.0" encoding="UTF-8"?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:simpleType name="count">
@@ -185,12 +166,10 @@ def data_file_setup(request):
             </xsd:restriction>
           </xsd:simpleType>
         </xsd:schema>
-        """
-    ).encode()
+        """).encode()
 
     schema_path = "schemas/root.xsd" if "/" not in path else "../schemas/root.xsd"
-    mapper[path] = dedent(
-        f"""
+    mapper[path] = dedent(f"""
         <?xml version="1.0" encoding="UTF-8"?>
         <elements xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="schema {schema_path}">
           <summary>
@@ -199,8 +178,7 @@ def data_file_setup(request):
           </summary>
           <count>3</count>
         </elements>
-        """
-    ).encode()
+        """).encode()
 
     expected = {
         "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
