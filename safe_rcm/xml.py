@@ -1,6 +1,7 @@
-import io
+import pathlib
 import posixpath
 import re
+import tempfile
 from collections import deque
 
 import xmlschema
@@ -44,29 +45,47 @@ def schema_paths(mapper, root_schema):
     return visited
 
 
-def open_schema(mapper, schema):
-    """fsspec-compatible way to open remote schema files
-
-    Parameters
-    ----------
-    fs : fsspec.filesystem
-        pre-instantiated fsspec filesystem instance
-    root : str
-        URL of the root directory of the schema files
-    name : str
-        File name of the schema to open.
-    glob : str, default: "*.xsd"
-        The glob used to find other schema files
-
-    Returns
-    -------
-    xmlschema.XMLSchema
-        The opened schema object
+def open_schema(mapper, schema_path):
     """
-    paths = schema_paths(mapper, schema)
-    preprocessed = [io.StringIO(remove_includes(mapper[p].decode())) for p in paths]
+    method to open xml schema from a mapper (ffspec obj like) and a path
+    modified to support xmlschema==4.x
 
-    return xmlschema.XMLSchema(preprocessed)
+    Args:
+        mapper (fsspec.mapping.FSMap object):
+        schema_path (str): example 'support/schemas/rcm_prod_manifest.xsd' or 'support/schemas/rcm_prod_product.xsd'
+
+    Returns:
+        schema (xmlschema.validators.schemas.XMLSchema11):
+    """
+
+    # 1. Create a temporary directory that exists as long as we need the schema
+    # Note: In a production app, you might want to cache this
+    # so you don't rewrite files every time.
+    temp_dir = tempfile.TemporaryDirectory()
+    temp_path = pathlib.Path(temp_dir.name)
+
+    # 2. Write all XSDs from the mapper to the temp directory
+    # preserving the folder structure
+    for k, v in mapper.items():
+        if k.endswith(".xsd"):
+            file_path = temp_path / k
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            file_path.write_bytes(v)
+
+    # 3. Point xmlschema at the REAL file on the REAL disk
+    # The library will now handle all relative includes/imports
+    # perfectly using standard OS paths.
+    absolute_schema_path = temp_path / schema_path
+
+    try:
+        schema = xmlschema.XMLSchema11(str(absolute_schema_path))
+        # We attach the temp_dir object to the schema so it isn't
+        # deleted until the schema object itself is garbage collected
+        schema._temp_dir_handle = temp_dir
+        return schema
+    except Exception as e:
+        temp_dir.cleanup()
+        raise e
 
 
 def read_xml(mapper, path):
