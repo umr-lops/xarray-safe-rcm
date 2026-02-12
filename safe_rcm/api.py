@@ -156,7 +156,7 @@ def open_rcm(
         resolved,
     )
     dss = [ds.assign_coords(pole=coord) for coord, ds in imagery_dss.items()]
-    imagery = xr.concat(dss, dim="pole")
+    imagery = xr.concat(dss, dim="pole", compat="override", coords="minimal")
 
     return tree.assign(
         {
