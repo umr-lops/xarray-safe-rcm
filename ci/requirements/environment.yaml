@@ -23,7 +23,7 @@ dependencies:
   - zarr
   - scipy
   # data
-  - xarray
+  - xarray>=2024.10.0
   - dask
   - numpy
   - pandas
