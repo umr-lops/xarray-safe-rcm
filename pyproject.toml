@@ -7,7 +7,7 @@ readme = "README.md"
 dependencies = [
   "toolz",
   "numpy",
-  "xarray>=2024.10.0",
+  "xarray>=2025.08.0",
   "lxml",
   "xmlschema",
   "rioxarray",
