@@ -1,5 +1,3 @@
-import os
-import os.path
 import posixpath
 import re
 import urllib.request
@@ -18,7 +16,8 @@ class CustomOpener(urllib.request.OpenerDirector):
     def open(self, url, data: None = None, timeout: None = None):
         # undo normalization
         # FIXME: figure out how to make xmlschema skip this step
-        path = os.path.relpath(url.removeprefix("file://"))
+        # path = os.path.relpath(url.removeprefix("file://"))
+        path = url.removeprefix("file://").lstrip("/")
 
         return self.fs.open(path)
 
@@ -27,7 +26,7 @@ def open_schema(mapper, schema_path):
     dirfs = DirFileSystem(fs=mapper.fs, path=mapper.root)
     opener = CustomOpener(dirfs)
 
-    settings = xmlschema.settings.SchemaSettings(opener=opener)
+    settings = xmlschema.settings.SchemaSettings(opener=opener, base_url="file://.")
     return xmlschema.XMLSchema.from_settings(settings=settings, source=schema_path)
 
 
