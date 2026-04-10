@@ -1,13 +1,13 @@
 [project]
 name = "xarray-safe-rcm"
-requires-python = ">= 3.10"
+requires-python = ">= 3.11"
 license = { text = "MIT" }
 description = "xarray reader for radarsat constellation mission (RCM) SAFE files"
 readme = "README.md"
 dependencies = [
   "toolz",
   "numpy",
-  "xarray",
+  "xarray>=2025.08.0",
   "lxml",
   "xmlschema",
   "rioxarray",
@@ -31,7 +31,7 @@ include = [
 fallback_version = "9999"
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 builtins = ["ellipsis"]
 exclude = [".git", ".eggs", "build", "dist", "__pycache__"]
 line-length = 100
