@@ -10,6 +10,8 @@ from safe_rcm.product.predicates import disjunction, is_nested_array, is_scalar_
 from safe_rcm.product.utils import dictfirst, starcall
 from safe_rcm.xml import read_xml
 
+xr.set_options(use_new_combine_kwarg_defaults=True)
+
 
 @curry
 def attach_path(obj, path):
@@ -206,7 +208,12 @@ def read_product(mapper, product_path):
                     ),
                 ),
                 list,
-                curry(xr.concat, dim="burst_maps"),
+                curry(
+                    xr.concat,
+                    dim="burst_maps",
+                    combine_attrs="override",
+                    compat="equals",
+                ),
             ),
         },
         "/dopplerCentroid": {
@@ -238,7 +245,12 @@ def read_product(mapper, product_path):
                     ),
                 ),
                 list,
-                curry(xr.concat, dim="burst_maps"),
+                curry(
+                    xr.concat,
+                    dim="burst_maps",
+                    combine_attrs="override",
+                    compat="equals",
+                ),
             ),
         },
         "/dopplerRate": {
@@ -267,7 +279,12 @@ def read_product(mapper, product_path):
                     ),
                 ),
                 list,
-                curry(xr.concat, dim="burst_maps"),
+                curry(
+                    xr.concat,
+                    dim="burst_maps",
+                    combine_attrs="override",
+                    compat="equals",
+                ),
             ),
         },
     }
