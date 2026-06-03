@@ -1,11 +1,34 @@
-import io
 import posixpath
 import re
+import urllib.request
 from collections import deque
 
 import xmlschema
+from fsspec.implementations.dirfs import DirFileSystem
 from lxml import etree
 from tlz.dicttoolz import keymap
+
+
+class CustomOpener(urllib.request.OpenerDirector):
+    def __init__(self, fs):
+        self.fs = fs
+
+    def open(self, url, data: None = None, timeout: None = None):
+        # undo normalization
+        # FIXME: figure out how to make xmlschema skip this step
+        # path = os.path.relpath(url.removeprefix("file://"))
+        path = url.removeprefix("file://").lstrip("/")
+
+        return self.fs.open(path)
+
+
+def open_schema(mapper, schema_path):
+    dirfs = DirFileSystem(fs=mapper.fs, path=mapper.root)
+    opener = CustomOpener(dirfs)
+
+    settings = xmlschema.settings.SchemaSettings(opener=opener, base_url="file://.")
+    return xmlschema.XMLSchema.from_settings(settings=settings, source=schema_path)
+
 
 include_re = re.compile(r'\s*<xsd:include schemaLocation="(?P<location>[^"/]+)"\s?/>')
 
@@ -42,31 +65,6 @@ def schema_paths(mapper, root_schema):
         unvisited.extend([p for p in normalized if p not in visited])
 
     return visited
-
-
-def open_schema(mapper, schema):
-    """fsspec-compatible way to open remote schema files
-
-    Parameters
-    ----------
-    fs : fsspec.filesystem
-        pre-instantiated fsspec filesystem instance
-    root : str
-        URL of the root directory of the schema files
-    name : str
-        File name of the schema to open.
-    glob : str, default: "*.xsd"
-        The glob used to find other schema files
-
-    Returns
-    -------
-    xmlschema.XMLSchema
-        The opened schema object
-    """
-    paths = schema_paths(mapper, schema)
-    preprocessed = [io.StringIO(remove_includes(mapper[p].decode())) for p in paths]
-
-    return xmlschema.XMLSchema(preprocessed)
 
 
 def read_xml(mapper, path):
