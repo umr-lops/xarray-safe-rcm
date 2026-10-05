@@ -22,7 +22,7 @@ repos:
     rev: v0.4.6
     hooks:
       - id: blackdoc
-        additional_dependencies: ["black==26.5.1"]
+        additional_dependencies: ["black==26.10.0"]
       - id: blackdoc-autoupdate-black
   - repo: https://github.com/kynan/nbstripout
     rev: 0.9.1
@@ -42,6 +42,6 @@ repos:
       - id: taplo-lint
         args: [--no-schema]
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: '0.26'
+    rev: "0.26"
     hooks:
       - id: validate-pyproject
