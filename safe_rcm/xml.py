@@ -26,7 +26,8 @@ def open_schema(mapper, schema_path):
     dirfs = DirFileSystem(fs=mapper.fs, path=mapper.root)
     opener = CustomOpener(dirfs)
 
-    settings = xmlschema.settings.SchemaSettings(opener=opener, base_url="file://.")
+    # "file://." gives file:////x URLs that py3.11 normalizes inconsistently (infinite include loop)
+    settings = xmlschema.settings.SchemaSettings(opener=opener, base_url="file:///")
     return xmlschema.XMLSchema.from_settings(settings=settings, source=schema_path)
 
 
