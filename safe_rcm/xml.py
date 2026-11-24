@@ -18,7 +18,8 @@ class CustomOpener(urllib.request.OpenerDirector):
         # FIXME: figure out how to make xmlschema skip this step
         # path = os.path.relpath(url.removeprefix("file://"))
         path = url.removeprefix("file://").lstrip("/")
-
+        # xmlschema prepends the drive on windows (file:///D:/schemas/...)
+        path = re.sub(r"^[A-Za-z]:/", "", path)
         return self.fs.open(path)
 
 
